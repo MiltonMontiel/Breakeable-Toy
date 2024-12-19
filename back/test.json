@@ -1,0 +1,11 @@
+{
+    "id": "123",
+    "name": "Testing post",
+    "category": "New category",
+    "unitPrice": 12.2,
+    "expirationDate": "2024-12-18T23:18:55.160+00:00",
+    "creationDate": "2024-12-18T23:18:55.160+00:00",
+    "updateDate": "2024-12-18T23:18:55.160+00:00",
+    "quantityInStock": 2,
+    "inStock": false
+}
