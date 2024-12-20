@@ -9,6 +9,8 @@ import java.util.Set;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,8 +34,8 @@ class RestAPIController {
 
     public RestAPIController() {
         products.addAll(List.of(
-                new Product("Test", "Cat", 12.2, new Date(), new Date(), new Date(), 2, true),
-                new Product("Test 1", "Cat 1", 123.34, new Date(), new Date(), new Date(), 23, false)));
+                new Product("Watermelon", "Food", 123.2, Optional.empty(), new Date(), new Date(), 2, true),
+                new Product("Apple", "Fruit", 123.34, Optional.empty(), new Date(), new Date(), 23, false)));
 
         // Populate categories list
         for (Product p : products) {
@@ -68,6 +70,7 @@ class RestAPIController {
     // Create a new product with validation.
     @PostMapping
     Product postProduct(@RequestBody Product product) {
+        // Checar si los fields requeridos y limite de caracteres.
         products.add(product);
         categories.add(product.getCategory());
         return product;
@@ -91,22 +94,53 @@ class RestAPIController {
         return (productIndex == -1) ? postProduct(product) : product;
     }
 
-    // Given an id, if there is a product with such an id then
-    // this sets the inStock attribute to false, otherwise it returns
-    // null.
-
-    // TODO: Adapt this to the IETF documentation.
+    /*
+     * Given an id and a product, this sets the quantity in stock of such product to
+     * zero
+     * and then checks if it exists in the products list. If it does then it updates
+     * it
+     * with the new product, otherwise it creates it.
+     */
     @PutMapping("/{id}/outofstock")
-    public Optional<Product> putOutOfStock(@PathVariable String id) {
+    ResponseEntity<Product> putOutOfStock(@PathVariable String id, @RequestBody Product product) {
+        int productIndex = -1;
+
+        // Update the number of items in stock to zero
+        product.setQuantityInStock(0);
+
         for (Product p : products) {
             if (p.getId().equals(id)) {
-                p.setInStock(false);
-                return Optional.of(p);
+                productIndex = products.indexOf(p);
+                products.set(productIndex, product);
             }
         }
-        return Optional.empty();
+
+        return (productIndex == -1) ? new ResponseEntity<>(postProduct(product), HttpStatus.CREATED)
+                : new ResponseEntity<>(product, HttpStatus.OK);
     }
 
+    /*
+     * Given an id and a product, this sets the quantity in stock of such product to
+     * zero
+     * and then checks if it exists in the products list. If it does then it updates
+     * it
+     * with the new product, otherwise it creates it.
+     */
+    @PutMapping("/{id}/instock")
+    ResponseEntity<Product> putInStock(@PathVariable String id, @RequestBody Product product) {
+        int productIndex = -1;
+
+        for (Product p : products) {
+            if (p.getId().equals(id)) {
+                productIndex = products.indexOf(p);
+                products.set(productIndex, product);
+            }
+        }
+
+        return (productIndex == -1) ? new ResponseEntity<>(postProduct(product), HttpStatus.CREATED)
+                : new ResponseEntity<>(product, HttpStatus.OK);
+
+    }
     // Given an id, if there is a product matching such id then
     // this sets the inStock attribute to true. Otherwise it returns
     // null.

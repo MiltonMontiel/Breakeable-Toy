@@ -1,14 +1,16 @@
 package com.breakable.toy;
 
+// TODO: Usar localdatime
 import java.util.Date;
+import java.util.Optional;
 import java.util.UUID;
 
 class Product {
-    private final String id;
+    private String id;
     private String name;
     private String category;
     private double unitPrice;
-    private Date expirationDate;
+    private Optional<Date> expirationDate;
     private Date creationDate;
     private Date updateDate;
     private Integer quantityInStock;
@@ -22,7 +24,7 @@ class Product {
         this.inStock = inStock;
     }
 
-    public Product(String id, String name, String category, double unitPrice, Date expirationDate2,
+    public Product(String id, String name, String category, double unitPrice, Optional<Date> expirationDate2,
             Date creationDate2, Date updateDate2, Integer quantityInStock, boolean inStock) {
         this.id = id;
         this.name = name;
@@ -34,10 +36,14 @@ class Product {
         this.quantityInStock = quantityInStock;
     }
 
-    public Product(String name, String category, double unitPrice, Date expirationDate,
+    public Product(String name, String category, double unitPrice, Optional<Date> expirationDate,
             Date creationDate, Date updateDate, Integer quantityInStock, boolean inStock) {
         this(UUID.randomUUID().toString(), name, category, unitPrice, expirationDate, creationDate, updateDate,
                 quantityInStock, inStock);
+    }
+
+    public Product() {
+
     }
 
     public void setName(String name) {
@@ -52,7 +58,7 @@ class Product {
         this.unitPrice = unitPrice;
     }
 
-    public void setExpirationDate(Date expirationDate) {
+    public void setExpirationDate(Optional<Date> expirationDate) {
         this.expirationDate = expirationDate;
     }
 
@@ -84,7 +90,7 @@ class Product {
         return unitPrice;
     }
 
-    public Date getExpirationDate() {
+    public Optional<Date> getExpirationDate() {
         return expirationDate;
     }
 
