@@ -1,5 +1,6 @@
 package com.breakable.toy;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -34,8 +35,10 @@ class RestAPIController {
 
     public RestAPIController() {
         products.addAll(List.of(
-                new Product("Watermelon", "Food", 123.2, Optional.empty(), new Date(), new Date(), 2, true),
-                new Product("Apple", "Fruit", 123.34, Optional.empty(), new Date(), new Date(), 23, false)));
+                new Product("Watermelon", "Food", 123.2, Optional.empty(), LocalDateTime.now(), LocalDateTime.now(), 2,
+                        true),
+                new Product("Apple", "Fruit", 123.34, Optional.empty(), LocalDateTime.now(), LocalDateTime.now(), 23,
+                        false)));
 
         // Populate categories list
         for (Product p : products) {
@@ -70,17 +73,31 @@ class RestAPIController {
     // Create a new product with validation.
     @PostMapping
     Product postProduct(@RequestBody Product product) {
-        // Checar si los fields requeridos y limite de caracteres.
-        products.add(product);
-        categories.add(product.getCategory());
-        return product;
+        // TODO: Check if required fields are present.
+        if (product.fieldsAreValid()) {
+
+            // TODO: Check if product.name has <= 120 characters.
+
+            // Set creation date to now.
+            LocalDateTime creationDate = LocalDateTime.now();
+            product.setCreationDate(creationDate);
+
+            products.add(product);
+            categories.add(product.getCategory());
+            return product;
+        } else {
+            return product;
+        }
     }
 
     // update a product (name, category, price, stock, expiration date)
     @PutMapping("/{id}")
     Product putProduct(@PathVariable String id, @RequestBody Product product) {
         int productIndex = -1;
+        LocalDateTime updateDate = LocalDateTime.now();
+        product.setUpdateDate(updateDate);
 
+        // TODO: Do this in constant time.
         // Check if product already exists.
         for (Product p : products) {
             if (p.getId().equals(id)) {
@@ -141,21 +158,4 @@ class RestAPIController {
                 : new ResponseEntity<>(product, HttpStatus.OK);
 
     }
-    // Given an id, if there is a product matching such id then
-    // this sets the inStock attribute to true. Otherwise it returns
-    // null.
-
-    // TODO: Adapt this to the IETF documentation.
-    @PutMapping("/{id}/instock")
-    public Optional<Product> putInStock(@PathVariable String id) {
-        for (Product p : products) {
-            if (p.getId().equals(id)) {
-                p.setInStock(true);
-                return Optional.of(p);
-            }
-        }
-
-        return Optional.empty();
-    }
-
 }

@@ -1,7 +1,6 @@
 package com.breakable.toy;
 
-// TODO: Usar localdatime
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -10,9 +9,9 @@ class Product {
     private String name;
     private String category;
     private double unitPrice;
-    private Optional<Date> expirationDate;
-    private Date creationDate;
-    private Date updateDate;
+    private Optional<LocalDateTime> expirationDate;
+    private LocalDateTime creationDate;
+    private LocalDateTime updateDate;
     private Integer quantityInStock;
     private boolean inStock;
 
@@ -24,8 +23,8 @@ class Product {
         this.inStock = inStock;
     }
 
-    public Product(String id, String name, String category, double unitPrice, Optional<Date> expirationDate2,
-            Date creationDate2, Date updateDate2, Integer quantityInStock, boolean inStock) {
+    public Product(String id, String name, String category, double unitPrice, Optional<LocalDateTime> expirationDate2,
+            LocalDateTime creationDate2, LocalDateTime updateDate2, Integer quantityInStock, boolean inStock) {
         this.id = id;
         this.name = name;
         this.category = category;
@@ -36,8 +35,8 @@ class Product {
         this.quantityInStock = quantityInStock;
     }
 
-    public Product(String name, String category, double unitPrice, Optional<Date> expirationDate,
-            Date creationDate, Date updateDate, Integer quantityInStock, boolean inStock) {
+    public Product(String name, String category, double unitPrice, Optional<LocalDateTime> expirationDate,
+            LocalDateTime creationDate, LocalDateTime updateDate, Integer quantityInStock, boolean inStock) {
         this(UUID.randomUUID().toString(), name, category, unitPrice, expirationDate, creationDate, updateDate,
                 quantityInStock, inStock);
     }
@@ -58,15 +57,15 @@ class Product {
         this.unitPrice = unitPrice;
     }
 
-    public void setExpirationDate(Optional<Date> expirationDate) {
+    public void setExpirationDate(Optional<LocalDateTime> expirationDate) {
         this.expirationDate = expirationDate;
     }
 
-    public void setCreationDate(Date creationDate) {
+    public void setCreationDate(LocalDateTime creationDate) {
         this.creationDate = creationDate;
     }
 
-    public void setUpdateDate(Date updateDate) {
+    public void setUpdateDate(LocalDateTime updateDate) {
         this.updateDate = updateDate;
     }
 
@@ -90,20 +89,28 @@ class Product {
         return unitPrice;
     }
 
-    public Optional<Date> getExpirationDate() {
+    public Optional<LocalDateTime> getExpirationDate() {
         return expirationDate;
     }
 
-    public Date getCreationDate() {
+    public LocalDateTime getCreationDate() {
         return creationDate;
     }
 
-    public Date getUpdateDate() {
+    public LocalDateTime getUpdateDate() {
         return updateDate;
     }
 
     public Integer getQuantityInStock() {
         return quantityInStock;
+    }
+
+    public Boolean fieldsAreValid() {
+        if (this.category == null || this.name == null || this.category == null || this.quantityInStock == null) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
 }
