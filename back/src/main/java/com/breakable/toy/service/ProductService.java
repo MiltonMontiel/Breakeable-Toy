@@ -50,6 +50,7 @@ public class ProductService {
                 return Optional.empty();
             }
 
+            this.categories.add(product.getCategory());
             product.setCreationDate(LocalDateTime.now());
             product.setUpdateDate(LocalDateTime.now());
 
