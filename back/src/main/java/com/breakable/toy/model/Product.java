@@ -13,18 +13,9 @@ public class Product {
     private LocalDateTime creationDate;
     private LocalDateTime updateDate;
     private Integer quantityInStock;
-    private boolean inStock;
-
-    public boolean isInStock() {
-        return inStock;
-    }
-
-    public void setInStock(boolean inStock) {
-        this.inStock = inStock;
-    }
 
     public Product(String id, String name, String category, double unitPrice, Optional<LocalDateTime> expirationDate2,
-            LocalDateTime creationDate2, LocalDateTime updateDate2, Integer quantityInStock, boolean inStock) {
+            LocalDateTime creationDate2, LocalDateTime updateDate2, Integer quantityInStock) {
         this.id = id;
         this.name = name;
         this.category = category;
@@ -36,9 +27,9 @@ public class Product {
     }
 
     public Product(String name, String category, double unitPrice, Optional<LocalDateTime> expirationDate,
-            LocalDateTime creationDate, LocalDateTime updateDate, Integer quantityInStock, boolean inStock) {
+            LocalDateTime creationDate, LocalDateTime updateDate, Integer quantityInStock) {
         this(UUID.randomUUID().toString(), name, category, unitPrice, expirationDate, creationDate, updateDate,
-                quantityInStock, inStock);
+                quantityInStock);
     }
 
     public Product() {

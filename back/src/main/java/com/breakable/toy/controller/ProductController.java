@@ -26,10 +26,8 @@ public class ProductController {
 
     public ProductController() {
         products.addAll(List.of(
-                new Product("Watermelon", "Food", 123.2, Optional.empty(), LocalDateTime.now(), LocalDateTime.now(), 2,
-                        true),
-                new Product("Apple", "Fruit", 123.34, Optional.empty(), LocalDateTime.now(), LocalDateTime.now(), 23,
-                        false)));
+                new Product("Watermelon", "Food", 123.2, Optional.empty(), LocalDateTime.now(), LocalDateTime.now(), 2),
+                new Product("Apple", "Fruit", 123.34, Optional.empty(), LocalDateTime.now(), LocalDateTime.now(), 23)));
 
         // Populate categories list
         for (Product p : products) {
@@ -77,6 +75,7 @@ public class ProductController {
             categories.add(product.getCategory());
             return product;
         } else {
+            // TODO: Handle error case
             return product;
         }
     }
