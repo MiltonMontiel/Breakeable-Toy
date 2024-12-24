@@ -1,8 +1,10 @@
 package com.breakable.toy.model;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 public class Product {
     private String id;
@@ -14,7 +16,7 @@ public class Product {
     private LocalDateTime updateDate;
     private Integer quantityInStock;
 
-    public Product(String id, String name, String category, double unitPrice, Optional<LocalDateTime> expirationDate2,
+    private Product(String id, String name, String category, double unitPrice, Optional<LocalDateTime> expirationDate2,
             LocalDateTime creationDate2, LocalDateTime updateDate2, Integer quantityInStock) {
         this.id = id;
         this.name = name;
@@ -97,9 +99,8 @@ public class Product {
     }
 
     public Boolean fieldsAreValid() {
-        return this.id != null && this.id.length() <= 120 & this.category != null && this.name != null
-                && this.category != null
-                && this.quantityInStock != null;
+        return !(Stream.of(this.id, this.category, this.name, this.quantityInStock, this.unitPrice)
+                .allMatch(Objects::isNull)) && this.name.length() <= 120;
     }
 
 }
