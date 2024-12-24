@@ -97,11 +97,9 @@ public class Product {
     }
 
     public Boolean fieldsAreValid() {
-        if (this.category == null || this.name == null || this.category == null || this.quantityInStock == null) {
-            return false;
-        } else {
-            return true;
-        }
+        return this.id != null && this.id.length() <= 120 & this.category != null && this.name != null
+                && this.category != null
+                && this.quantityInStock != null;
     }
 
 }

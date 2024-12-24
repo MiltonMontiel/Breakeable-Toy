@@ -1,151 +1,83 @@
 package com.breakable.toy.controller;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import com.breakable.toy.model.*;
+import com.breakable.toy.service.ProductService;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
 @RequestMapping("/products")
 public class ProductController {
-    private List<Product> products = new ArrayList<Product>();
-    private Set<String> categories = new HashSet<String>();
 
-    public ProductController() {
-        products.addAll(List.of(
-                new Product("Watermelon", "Food", 123.2, Optional.empty(), LocalDateTime.now(), LocalDateTime.now(), 2),
-                new Product("Apple", "Fruit", 123.34, Optional.empty(), LocalDateTime.now(), LocalDateTime.now(), 23)));
-
-        // Populate categories list
-        for (Product p : products) {
-            categories.add(p.getCategory());
-        }
-    }
+    @Autowired
+    private ProductService productService;
 
     // List products
     @GetMapping
-    Iterable<Product> getProducts() {
-        return products;
+    ResponseEntity<Iterable<Product>> getProducts() {
+        return new ResponseEntity<>(productService.getAllProducts(), HttpStatus.OK);
     }
 
-    // Get a product by id
     @GetMapping("/{id}")
-    public Optional<Product> getProductById(@PathVariable String id) {
-        for (Product p : products) {
-            if (p.getId().equals(id)) {
-                return Optional.of(p);
-            }
-        }
+    public ResponseEntity<Product> getProductById(@PathVariable String id) {
 
-        return Optional.empty();
+        Optional<Product> product = productService.getProductById(id);
+
+        if (product.isPresent()) {
+            return new ResponseEntity<>(product.get(), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     // Gets the list of all available categories.
     @GetMapping("/categories")
-    Iterable<String> getMethodName() {
-        return categories;
+    ResponseEntity<Iterable<String>> getCategoriesList() {
+        return new ResponseEntity<>(productService.getCategories(), HttpStatus.OK);
     }
 
-    // Create a new product with validation.
     @PostMapping
-    Product postProduct(@RequestBody Product product) {
-        // TODO: Check if required fields are present.
-        if (product.fieldsAreValid()) {
+    ResponseEntity<Product> postProduct(@RequestBody Product product) {
+        Optional<Product> created_product = productService.createProduct(product);
 
-            // TODO: Check if product.name has <= 120 characters.
-
-            // Set creation date to now.
-            LocalDateTime creationDate = LocalDateTime.now();
-            product.setCreationDate(creationDate);
-
-            products.add(product);
-            categories.add(product.getCategory());
-            return product;
-        } else {
-            // TODO: Handle error case
-            return product;
-        }
+        return (created_product.isEmpty()) ? new ResponseEntity<>(HttpStatus.BAD_REQUEST)
+                : new ResponseEntity<>(created_product.get(), HttpStatus.CREATED);
     }
 
-    // update a product (name, category, price, stock, expiration date)
     @PutMapping("/{id}")
-    Product putProduct(@PathVariable String id, @RequestBody Product product) {
-        int productIndex = -1;
-        LocalDateTime updateDate = LocalDateTime.now();
-        product.setUpdateDate(updateDate);
+    ResponseEntity<Product> putProduct(@PathVariable String id, @RequestBody Product product) {
+        Optional<Product> updated_product = productService.updateProduct(product);
 
-        // TODO: Do this in constant time.
-        // Check if product already exists.
-        for (Product p : products) {
-            if (p.getId().equals(id)) {
-                productIndex = products.indexOf(p);
-                products.set(productIndex, product);
-                categories.add(p.getCategory());
-            }
-        }
+        return (updated_product.isEmpty()) ? this.postProduct(product)
+                : new ResponseEntity<>(updated_product.get(), HttpStatus.OK);
 
-        // If the product doesnt exists then we create it.
-        return (productIndex == -1) ? postProduct(product) : product;
     }
 
-    /*
-     * Given an id and a product, this sets the quantity in stock of such product to
-     * zero
-     * and then checks if it exists in the products list. If it does then it updates
-     * it
-     * with the new product, otherwise it creates it.
-     */
     @PutMapping("/{id}/outofstock")
     ResponseEntity<Product> putOutOfStock(@PathVariable String id, @RequestBody Product product) {
-        int productIndex = -1;
-
-        // Update the number of items in stock to zero
-        product.setQuantityInStock(0);
-
-        for (Product p : products) {
-            if (p.getId().equals(id)) {
-                productIndex = products.indexOf(p);
-                products.set(productIndex, product);
-            }
+        if (product.getQuantityInStock() == 0) {
+            return this.putProduct(id, product);
+        } else {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-
-        return (productIndex == -1) ? new ResponseEntity<>(postProduct(product), HttpStatus.CREATED)
-                : new ResponseEntity<>(product, HttpStatus.OK);
     }
 
-    /*
-     * Given an id and a product, this sets the quantity in stock of such product to
-     * zero
-     * and then checks if it exists in the products list. If it does then it updates
-     * it
-     * with the new product, otherwise it creates it.
-     */
     @PutMapping("/{id}/instock")
     ResponseEntity<Product> putInStock(@PathVariable String id, @RequestBody Product product) {
-        int productIndex = -1;
-
-        for (Product p : products) {
-            if (p.getId().equals(id)) {
-                productIndex = products.indexOf(p);
-                products.set(productIndex, product);
-            }
+        if (product.getQuantityInStock() > 0) {
+            return this.putProduct(id, product);
+        } else {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-
-        return (productIndex == -1) ? new ResponseEntity<>(postProduct(product), HttpStatus.CREATED)
-                : new ResponseEntity<>(product, HttpStatus.OK);
-
     }
 }
