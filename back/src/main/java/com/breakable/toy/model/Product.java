@@ -1,10 +1,10 @@
-package com.breakable.toy;
+package com.breakable.toy.model;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-class Product {
+public class Product {
     private String id;
     private String name;
     private String category;
