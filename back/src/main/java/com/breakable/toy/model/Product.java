@@ -99,8 +99,8 @@ public class Product {
     }
 
     public Boolean fieldsAreValid() {
-        return !(Stream.of(this.id, this.category, this.name, this.quantityInStock, this.unitPrice)
-                .allMatch(Objects::isNull)) && this.name.length() <= 120;
+        return (Stream.of(this.id, this.category, this.name, this.quantityInStock, this.unitPrice)
+                .allMatch(Objects::nonNull)) && this.name.length() <= 120;
     }
 
 }

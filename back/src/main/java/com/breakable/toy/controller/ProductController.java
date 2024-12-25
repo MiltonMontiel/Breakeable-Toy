@@ -2,6 +2,7 @@ package com.breakable.toy.controller;
 
 import java.util.Optional;
 import com.breakable.toy.model.*;
+import com.breakable.toy.model.Result.Status;
 import com.breakable.toy.service.ProductService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,14 +30,16 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable String id) {
+    public ResponseEntity<Result<Product>> getProductById(@PathVariable String id) {
 
         Optional<Product> product = productService.getProductById(id);
 
         if (product.isPresent()) {
-            return new ResponseEntity<>(product.get(), HttpStatus.OK);
+            Result<Product> result = new Result<Product>(Status.Ok, "Product retrieved correctly", null);
+            return ResponseEntity.status(HttpStatus.OK).body(result);
         } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            Result<Product> result = new Result<>(Status.Err, "Product with id " + id + "not found", null);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(result);
         }
     }
 
@@ -47,37 +50,37 @@ public class ProductController {
     }
 
     @PostMapping
-    ResponseEntity<Product> postProduct(@RequestBody Product product) {
-        Optional<Product> created_product = productService.createProduct(product);
+    ResponseEntity<Result<Product>> postProduct(@RequestBody Product product) {
+        Result<Product> created_product = productService.createProduct(product);
 
-        return (created_product.isEmpty()) ? new ResponseEntity<>(HttpStatus.BAD_REQUEST)
-                : new ResponseEntity<>(created_product.get(), HttpStatus.CREATED);
+        return (created_product.status().equals(Status.Err))
+                ? ResponseEntity.status(HttpStatus.BAD_REQUEST).body(created_product)
+                : ResponseEntity.status(HttpStatus.OK).body(created_product);
     }
 
     @PutMapping("/{id}")
-    ResponseEntity<Product> putProduct(@PathVariable String id, @RequestBody Product product) {
-        Optional<Product> updated_product = productService.updateProduct(product);
+    ResponseEntity<Result<Product>> putProduct(@PathVariable String id, @RequestBody Product product) {
+        Result<Product> updated_product = productService.updateProduct(product);
 
-        return (updated_product.isEmpty()) ? this.postProduct(product)
-                : new ResponseEntity<>(updated_product.get(), HttpStatus.OK);
+        return (updated_product.status().equals(Status.Err)) ? this.postProduct(product)
+                : ResponseEntity.status(HttpStatus.OK).body(updated_product);
 
     }
 
     @PutMapping("/{id}/outofstock")
-    ResponseEntity<Product> putOutOfStock(@PathVariable String id, @RequestBody Product product) {
-        if (product.getQuantityInStock() == 0) {
-            return this.putProduct(id, product);
-        } else {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+    ResponseEntity<Result<Product>> putOutOfStock(@PathVariable String id, @RequestBody Product product) {
+        product.setQuantityInStock(0);
+        return this.putProduct(id, product);
     }
 
     @PutMapping("/{id}/instock")
-    ResponseEntity<Product> putInStock(@PathVariable String id, @RequestBody Product product) {
+    ResponseEntity<Result<Product>> putInStock(@PathVariable String id, @RequestBody Product product) {
         if (product.getQuantityInStock() > 0) {
             return this.putProduct(id, product);
         } else {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            Result<Product> result = new Result<Product>(Status.Err,
+                    "Please ensure quantityInStock is grater than zero", product);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
         }
     }
 }

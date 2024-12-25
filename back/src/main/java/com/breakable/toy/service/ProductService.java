@@ -10,6 +10,8 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 
 import com.breakable.toy.model.Product;
+import com.breakable.toy.model.Result;
+import com.breakable.toy.model.Result.Status;
 
 @Service
 public class ProductService {
@@ -42,12 +44,12 @@ public class ProductService {
         return this.productsMap.containsKey(id) ? Optional.of(this.productsMap.get(id)) : Optional.empty();
     }
 
-    public Optional<Product> createProduct(Product product) {
+    public Result<Product> createProduct(Product product) {
 
         if (product.fieldsAreValid()) {
 
             if (this.productsMap.containsKey(product.getId())) {
-                return Optional.empty();
+                return new Result<Product>(Status.Err, "Product already exists", product);
             }
 
             this.categories.add(product.getCategory());
@@ -56,22 +58,25 @@ public class ProductService {
 
             this.productsMap.put(product.getId(), product);
             this.categories.add(product.getCategory());
-            return Optional.of(product);
+            return new Result<Product>(Status.Ok, "Successfully created product", product);
 
         } else {
-            return Optional.empty();
+            return new Result<Product>(Status.Err, "Product fields are invalid", product);
         }
     }
 
-    public Optional<Product> updateProduct(Product product) {
-        if (this.productsMap.containsKey(product.getId()) && product.fieldsAreValid()) {
+    public Result<Product> updateProduct(Product product) {
+        if (this.productsMap.containsKey(product.getId())) {
+            if (product.fieldsAreValid()) {
+                product.setUpdateDate(LocalDateTime.now());
+                this.productsMap.put(product.getId(), product);
 
-            product.setUpdateDate(LocalDateTime.now());
-            this.productsMap.put(product.getId(), product);
-
-            return Optional.of(product);
+                return new Result<Product>(Status.Ok, "Product successfully updated", product);
+            } else {
+                return new Result<Product>(Status.Err, "Product fields are invalid", product);
+            }
         } else {
-            return Optional.empty();
+            return new Result<Product>(Status.Err, "Product with id: " + product.getId() + " does not exists", product);
         }
     }
 }
