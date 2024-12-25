@@ -102,11 +102,13 @@ const columns: GridColDef[] = [
   { field: "col5", headerName: "Stock" },
 ];
 
+const categories = ["Food", "Cleaning", "Misc"];
+
 export default function Home() {
   return (
     <div style={{ width: "100%" }}>
       <Stack spacing={2}>
-        <SearchMenu />
+        <SearchMenu categories={categories}/> 
         <Button variant="contained">New product</Button>
         <DataGrid rows={rows} columns={columns} checkboxSelection />
         <Statistics />
