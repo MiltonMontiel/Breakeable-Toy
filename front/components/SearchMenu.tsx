@@ -40,6 +40,36 @@ const SelectMenu: React.FC<SelectProps> = ({ label, menuItems }) => {
   );
 };
 
+const MultiSelectMenu: React.FC<SelectProps> = ({label, menuItems}) => {
+  const [items, setItems] = React.useState<string[]>([]);
+  const handleChange = (event: SelectChangeEvent<typeof items>) => {
+    const {
+      target: {value}, 
+    } = event; 
+    setItems(
+      typeof value === 'string' ? value.split(',') : value, 
+    )
+    console.log(items);
+  }
+
+  return (
+
+    <Stack direction="row" spacing={5} alignItems={"center"} paddingTop={2}>
+      <Typography fontSize={15}>{label}</Typography>
+      <FormControl sx={{ minWidth: 120 }}>
+        <InputLabel>{label}</InputLabel>
+        <Select onChange={handleChange} value={items} label={label} multiple>
+          {menuItems.map((item, id) => (
+            <MenuItem key={id} value={id}>
+              {item}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+    </Stack>
+  )
+}
+
 type TextFieldProps = {
   label: string;
 };
@@ -75,7 +105,7 @@ export const SearchMenu: React.FC<SearchMenuProps> = ({ categories }) => {
         label={"Availability"}
         menuItems={["In stock", "Out of stock", "All"]}
       />
-      <SelectMenu label={"Category"} menuItems={categories} />
+      <MultiSelectMenu label={"Category"} menuItems={categories} />
     </Stack>
   );
 };
