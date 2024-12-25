@@ -1,10 +1,12 @@
-package com.breakable.toy;
+package com.breakable.toy.model;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
-class Product {
+public class Product {
     private String id;
     private String name;
     private String category;
@@ -13,18 +15,9 @@ class Product {
     private LocalDateTime creationDate;
     private LocalDateTime updateDate;
     private Integer quantityInStock;
-    private boolean inStock;
 
-    public boolean isInStock() {
-        return inStock;
-    }
-
-    public void setInStock(boolean inStock) {
-        this.inStock = inStock;
-    }
-
-    public Product(String id, String name, String category, double unitPrice, Optional<LocalDateTime> expirationDate2,
-            LocalDateTime creationDate2, LocalDateTime updateDate2, Integer quantityInStock, boolean inStock) {
+    private Product(String id, String name, String category, double unitPrice, Optional<LocalDateTime> expirationDate2,
+            LocalDateTime creationDate2, LocalDateTime updateDate2, Integer quantityInStock) {
         this.id = id;
         this.name = name;
         this.category = category;
@@ -36,9 +29,9 @@ class Product {
     }
 
     public Product(String name, String category, double unitPrice, Optional<LocalDateTime> expirationDate,
-            LocalDateTime creationDate, LocalDateTime updateDate, Integer quantityInStock, boolean inStock) {
+            LocalDateTime creationDate, LocalDateTime updateDate, Integer quantityInStock) {
         this(UUID.randomUUID().toString(), name, category, unitPrice, expirationDate, creationDate, updateDate,
-                quantityInStock, inStock);
+                quantityInStock);
     }
 
     public Product() {
@@ -106,11 +99,8 @@ class Product {
     }
 
     public Boolean fieldsAreValid() {
-        if (this.category == null || this.name == null || this.category == null || this.quantityInStock == null) {
-            return false;
-        } else {
-            return true;
-        }
+        return (Stream.of(this.id, this.category, this.name, this.quantityInStock, this.unitPrice)
+                .allMatch(Objects::nonNull)) && this.name.length() <= 120;
     }
 
 }
