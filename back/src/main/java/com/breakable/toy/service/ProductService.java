@@ -40,43 +40,27 @@ public class ProductService {
         return this.categories;
     }
 
-    public Optional<Product> getProductById(String id) {
-        return this.productsMap.containsKey(id) ? Optional.of(this.productsMap.get(id)) : Optional.empty();
+    public Product getProductById(String id) {
+        return this.productsMap.get(id);
     }
 
-    public Result<Product> createProduct(Product product) {
-
-        if (product.fieldsAreValid()) {
-
-            if (this.productsMap.containsKey(product.getId())) {
-                return new Result<Product>(Status.Err, "Product already exists", product);
-            }
-
-            this.categories.add(product.getCategory());
-            product.setCreationDate(LocalDateTime.now());
-            product.setUpdateDate(LocalDateTime.now());
-
-            this.productsMap.put(product.getId(), product);
-            this.categories.add(product.getCategory());
-            return new Result<Product>(Status.Ok, "Successfully created product", product);
-
-        } else {
-            return new Result<Product>(Status.Err, "Product fields are invalid", product);
-        }
+    public boolean containsProduct(String id) {
+        return this.productsMap.containsKey(id);
     }
 
-    public Result<Product> updateProduct(Product product) {
-        if (this.productsMap.containsKey(product.getId())) {
-            if (product.fieldsAreValid()) {
-                product.setUpdateDate(LocalDateTime.now());
-                this.productsMap.put(product.getId(), product);
+    public Product createProduct(Product product) {
 
-                return new Result<Product>(Status.Ok, "Product successfully updated", product);
-            } else {
-                return new Result<Product>(Status.Err, "Product fields are invalid", product);
-            }
-        } else {
-            return new Result<Product>(Status.Err, "Product with id: " + product.getId() + " does not exists", product);
-        }
+        this.categories.add(product.getCategory());
+        product.setCreationDate(LocalDateTime.now());
+        product.setUpdateDate(LocalDateTime.now());
+
+        this.productsMap.put(product.getId(), product);
+        this.categories.add(product.getCategory());
+        return product;
+    }
+
+    public Product updateProduct(Product product) {
+        this.productsMap.put(product.getId(), product);
+        return product;
     }
 }

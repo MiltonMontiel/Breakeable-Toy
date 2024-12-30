@@ -1,7 +1,7 @@
 package com.breakable.toy.controller;
 
-import java.util.Optional;
 import com.breakable.toy.model.*;
+import com.breakable.toy.model.Result;
 import com.breakable.toy.model.Result.Status;
 import com.breakable.toy.service.ProductService;
 
@@ -31,15 +31,13 @@ public class ProductController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Result<Product>> getProductById(@PathVariable String id) {
-
-        Optional<Product> product = productService.getProductById(id);
-
-        if (product.isPresent()) {
-            Result<Product> result = new Result<Product>(Status.Ok, "Product retrieved correctly", null);
-            return ResponseEntity.status(HttpStatus.OK).body(result);
+        if (productService.containsProduct(id)) {
+            Product retrievedProduct = productService.getProductById(id);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(new Result<Product>(Status.Ok, "Product retrieved correctly", retrievedProduct));
         } else {
-            Result<Product> result = new Result<>(Status.Err, "Product with id " + id + "not found", null);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(result);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new Result<Product>(Status.Err, "Product with id: " + id + " not found", null));
         }
     }
 
@@ -51,20 +49,37 @@ public class ProductController {
 
     @PostMapping
     ResponseEntity<Result<Product>> postProduct(@RequestBody Product product) {
-        Result<Product> created_product = productService.createProduct(product);
+        // Check if product fields are valid
+        if (product.fieldsAreValid()) {
+            // Check if product already exists.
+            if (!productService.containsProduct(product.getId())) {
+                Product created_product = productService.createProduct(product);
+                return ResponseEntity.status(HttpStatus.OK)
+                        .body(new Result<Product>(Status.Ok, "Sucessfully created product", created_product));
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new Result<Product>(Status.Err, "Product already exists", product));
+            }
 
-        return (created_product.status().equals(Status.Err))
-                ? ResponseEntity.status(HttpStatus.BAD_REQUEST).body(created_product)
-                : ResponseEntity.status(HttpStatus.OK).body(created_product);
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new Result<Product>(Status.Err, "Product fields are invalid", product));
+        }
     }
 
     @PutMapping("/{id}")
     ResponseEntity<Result<Product>> putProduct(@PathVariable String id, @RequestBody Product product) {
-        Result<Product> updated_product = productService.updateProduct(product);
+        // Check if product already exsits
+        if (productService.containsProduct(id)) {
 
-        return (updated_product.status().equals(Status.Err)) ? this.postProduct(product)
-                : ResponseEntity.status(HttpStatus.OK).body(updated_product);
+            Product updatedProduct = productService.updateProduct(product);
 
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(new Result<Product>(Status.Ok, "Successfully updated product", updatedProduct));
+        } else {
+            // If it doesnt exists we create it.
+            return this.postProduct(product);
+        }
     }
 
     @PutMapping("/{id}/outofstock")
