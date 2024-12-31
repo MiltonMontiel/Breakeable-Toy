@@ -15,7 +15,7 @@ const style = {
   p: 4,
 };
 
-const handleChange = (e: any, f: any) => {
+export const handleChange = (e: any, f: any) => {
   f(e.target.value as string);
 };
 export const CreateProductMenu = () => {
@@ -36,6 +36,11 @@ export const CreateProductMenu = () => {
     })
       .then((res) => console.log(res))
       .catch((err) => console.log(err));
+
+    // TODO: 
+    // Request products again
+    // Request categories again 
+    // Close modal
   };
 
   return (
