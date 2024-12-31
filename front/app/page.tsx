@@ -7,6 +7,7 @@ import { AxiosInstance } from "@/utils/axiosInstance";
 import React, { useEffect } from "react";
 import { CreateProductMenu } from "@/components/CreateProductMenu";
 import { Product } from "@/types/Product";
+import { getProducts, getCategories} from "@/utils/api";
 
 const columns: GridColDef[] = [
   { field: "category", headerName: "Category", width: 150 },
@@ -43,7 +44,7 @@ const statsRows: Row[] = [
 ]
 
 export default function Home() {
-  const [products, setProducts] = React.useState(null);
+  const [products, setProducts] = React.useState([]);
   const [categories, setCategories] = React.useState<string[]>([]);
   const [modalOpen, setModalOpen] = React.useState<boolean>(false);
 
@@ -51,29 +52,9 @@ export default function Home() {
   const handleCloseModal = () => setModalOpen(false);
 
   useEffect(() => {
-    getProducts();
-    getCategories();
-  }, []);
-
-  const getProducts = () => {
-    AxiosInstance.get("/products")
-      .then((response) => {
-        setProducts(parseProducts(response.data));
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }
-
-  const getCategories = () => {
-    AxiosInstance.get("/products/categories")
-      .then((res) => {
-        setCategories(res.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
+    getProducts(setProducts, parseProducts);
+    getCategories(setCategories);
+  }, [modalOpen]);
 
   return (
     <div style={{ width: "100%" }}>
@@ -86,7 +67,7 @@ export default function Home() {
           aria-labelledby='create-new-product'
           aria-describedby="menu-for-new-product"
         >
-        <CreateProductMenu getCategories={getCategories} getProducts={getProducts} closeModal={handleCloseModal}/> 
+        <CreateProductMenu closeModal={handleCloseModal}/> 
         </Modal>
         {products && (
           <DataGrid rows={products} columns={columns} checkboxSelection />

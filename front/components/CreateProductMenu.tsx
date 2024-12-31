@@ -20,13 +20,9 @@ export const handleChange = (e: any, f: any) => {
 };
 
 type Props = {
-  getProducts: any;
-  getCategories: any;
   closeModal: any;
 };
 export const CreateProductMenu: React.FC<Props> = ({
-  getProducts,
-  getCategories,
   closeModal,
 }) => {
   const [name, setName] = React.useState<string>("");
@@ -36,6 +32,7 @@ export const CreateProductMenu: React.FC<Props> = ({
   const [expDate, setExpDate] = React.useState("");
 
   const handleProduct = () => {
+    console.log("Doing...")
     AxiosInstance.post("/products", {
       name: name,
       category: category,
@@ -45,11 +42,6 @@ export const CreateProductMenu: React.FC<Props> = ({
     })
       .then((res) => console.log(res))
       .catch((err) => console.log(err));
-
-    // Request products again
-    getProducts();
-    // Request categories again
-    getCategories();
     // Close modal on sucess!!!!
     closeModal();
   };
