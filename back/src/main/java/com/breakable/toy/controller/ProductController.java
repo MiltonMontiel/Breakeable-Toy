@@ -29,17 +29,20 @@ public class ProductController {
         return new ResponseEntity<>(productService.getAllProducts(), HttpStatus.OK);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Result<Product>> getProductById(@PathVariable String id) {
-        if (productService.containsProduct(id)) {
-            Product retrievedProduct = productService.getProductById(id);
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(new Result<Product>(Status.Ok, "Product retrieved correctly", retrievedProduct));
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new Result<Product>(Status.Err, "Product with id: " + id + " not found", null));
-        }
-    }
+    // @GetMapping("/{id}")
+    // public ResponseEntity<Result<Product>> getProductById(@PathVariable String
+    // id) {
+    // if (productService.containsProduct(id)) {
+    // Product retrievedProduct = productService.getProductById(id);
+    // return ResponseEntity.status(HttpStatus.OK)
+    // .body(new Result<Product>(Status.Ok, "Product retrieved correctly",
+    // retrievedProduct));
+    // } else {
+    // return ResponseEntity.status(HttpStatus.NOT_FOUND)
+    // .body(new Result<Product>(Status.Err, "Product with id: " + id + " not
+    // found", null));
+    // }
+    // }
 
     // Gets the list of all available categories.
     @GetMapping("/categories")
@@ -52,7 +55,6 @@ public class ProductController {
         // Check if product fields are valid
         if (product.fieldsAreValid()) {
             Product created_product = productService.createProduct(product);
-            created_product.setId();
             return ResponseEntity.status(HttpStatus.OK)
                     .body(new Result<Product>(Status.Ok, "Sucessfully created product", created_product));
         } else {
