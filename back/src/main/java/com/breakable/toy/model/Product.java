@@ -38,6 +38,10 @@ public class Product {
 
     }
 
+    public void setId() {
+        this.id = UUID.randomUUID().toString();
+    }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -99,7 +103,7 @@ public class Product {
     }
 
     public Boolean fieldsAreValid() {
-        return (Stream.of(this.id, this.category, this.name, this.quantityInStock, this.unitPrice)
+        return (Stream.of(this.category, this.name, this.quantityInStock, this.unitPrice)
                 .allMatch(Objects::nonNull)) && this.name.length() <= 120;
     }
 

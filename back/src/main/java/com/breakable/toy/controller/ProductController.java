@@ -51,9 +51,12 @@ public class ProductController {
     ResponseEntity<Result<Product>> postProduct(@RequestBody Product product) {
         // Check if product fields are valid
         if (product.fieldsAreValid()) {
+            // TODO: This does not make sense anymore.
             // Check if product already exists.
             if (!productService.containsProduct(product.getId())) {
                 Product created_product = productService.createProduct(product);
+                // TODO: Is this correct?
+                created_product.setId();
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(new Result<Product>(Status.Ok, "Sucessfully created product", created_product));
             } else {
