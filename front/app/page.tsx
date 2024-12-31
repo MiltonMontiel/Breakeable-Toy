@@ -2,7 +2,7 @@
 import { DataGrid, GridColDef} from "@mui/x-data-grid";
 import {  Button, Modal, Stack } from "@mui/material";
 import { SearchMenu } from "@/components/SearchMenu";
-import { Statistics } from "@/components/Statistics";
+import { Row, Statistics } from "@/components/Statistics";
 import { AxiosInstance } from "@/utils/axiosInstance";
 import React, { useEffect } from "react";
 import { CreateProductMenu } from "@/components/CreateProductMenu";
@@ -33,6 +33,14 @@ const parseProducts: any = (products: Product[]) => {
   return parsed;
 };
 
+const statsRows: Row[] = [
+  {
+    category: "Test", 
+    totalInStock: 12, 
+    totalValueInStock: 123, 
+    averagePriceInStock: 123,
+  }
+]
 
 export default function Home() {
   const [products, setProducts] = React.useState(null);
@@ -78,12 +86,12 @@ export default function Home() {
           aria-labelledby='create-new-product'
           aria-describedby="menu-for-new-product"
         >
-        <CreateProductMenu /> 
+        <CreateProductMenu getCategories={getCategories} getProducts={getProducts} closeModal={handleCloseModal}/> 
         </Modal>
         {products && (
           <DataGrid rows={products} columns={columns} checkboxSelection />
         )}
-        <Statistics />
+        <Statistics rows={statsRows}/>
       </Stack>
     </div>
   );

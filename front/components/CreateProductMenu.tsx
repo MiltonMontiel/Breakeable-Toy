@@ -18,7 +18,17 @@ const style = {
 export const handleChange = (e: any, f: any) => {
   f(e.target.value as string);
 };
-export const CreateProductMenu = () => {
+
+type Props = {
+  getProducts: any;
+  getCategories: any;
+  closeModal: any;
+};
+export const CreateProductMenu: React.FC<Props> = ({
+  getProducts,
+  getCategories,
+  closeModal,
+}) => {
   const [name, setName] = React.useState<string>("");
   const [stock, setStock] = React.useState<number>(0);
   const [category, setCategory] = React.useState<string>("");
@@ -27,20 +37,21 @@ export const CreateProductMenu = () => {
 
   const handleProduct = () => {
     AxiosInstance.post("/products", {
-        id: "23", 
-        name: name, 
-        category: category, 
-        quantityInStock: stock, 
-        unitPrice: unitPrice, 
-        expirationDate: expDate, 
+      name: name,
+      category: category,
+      quantityInStock: stock,
+      unitPrice: unitPrice,
+      expirationDate: expDate,
     })
       .then((res) => console.log(res))
       .catch((err) => console.log(err));
 
-    // TODO: 
     // Request products again
-    // Request categories again 
-    // Close modal
+    getProducts();
+    // Request categories again
+    getCategories();
+    // Close modal on sucess!!!!
+    closeModal();
   };
 
   return (

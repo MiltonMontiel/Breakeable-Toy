@@ -15,61 +15,6 @@ import {
 import Grid from "@mui/material/Grid2";
 import { handleChange } from "./CreateProductMenu";
 
-type SelectProps = {
-  label: string;
-  menuItems: string[];
-};
-
-const SelectMenu: React.FC<SelectProps> = ({ label, menuItems }) => {
-  const [item, setItem] = React.useState("");
-
-  const handleChange = (event: SelectChangeEvent) => {
-    setItem(event.target.value as string);
-  };
-
-  return (
-    <Stack direction="row" spacing={5} alignItems={"center"} paddingTop={2}>
-      <Typography fontSize={15}>{label}</Typography>
-      <FormControl sx={{ minWidth: 120 }}>
-        <InputLabel>{label}</InputLabel>
-        <Select onChange={handleChange} value={item} label={label}>
-          {menuItems.map((item, id) => (
-            <MenuItem key={id} value={id}>
-              {item}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-    </Stack>
-  );
-};
-
-const MultiSelectMenu: React.FC<SelectProps> = ({ label, menuItems }) => {
-  const [items, setItems] = React.useState<string[]>([]);
-  const handleChange = (event: SelectChangeEvent<typeof items>) => {
-    const {
-      target: { value },
-    } = event;
-    setItems(typeof value === "string" ? value.split(",") : value);
-    console.log(items);
-  };
-
-  return (
-    <Stack direction="row" spacing={5} alignItems={"center"} paddingTop={2}>
-      <Typography fontSize={15}>{label}</Typography>
-      <FormControl sx={{ minWidth: 120 }}>
-        <InputLabel>{label}</InputLabel>
-        <Select onChange={handleChange} value={items} label={label} multiple>
-          {menuItems.map((item, id) => (
-            <MenuItem key={id} value={id}>
-              {item}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-    </Stack>
-  );
-};
 
 type TextFieldProps = {
   label: string;
