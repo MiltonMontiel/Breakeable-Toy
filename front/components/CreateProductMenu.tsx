@@ -1,7 +1,7 @@
 import { Box, Button, TextField, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import React from "react";
-import { Product } from "@/types/Product";
+import { AxiosInstance } from "@/utils/axiosInstance";
 
 const style = {
   position: "absolute",
@@ -19,13 +19,6 @@ const handleChange = (e: any, f: any) => {
   f(e.target.value as string);
 };
 export const CreateProductMenu = () => {
-  const [product, setProduct] = React.useState<Product>({
-    name: "",
-    category: "",
-    id: "",
-    quantityInStock: 0,
-    unitPrice: 0,
-  });
   const [name, setName] = React.useState<string>("");
   const [stock, setStock] = React.useState<number>(0);
   const [category, setCategory] = React.useState<string>("");
@@ -33,14 +26,16 @@ export const CreateProductMenu = () => {
   const [expDate, setExpDate] = React.useState("");
 
   const handleProduct = () => {
-    setProduct({
-      name,
-      category,
-      id: "",
-      quantityInStock: stock,
-      unitPrice,
-      expirationDate: expDate,
-    });
+    AxiosInstance.post("/products", {
+        id: "23", 
+        name: name, 
+        category: category, 
+        quantityInStock: stock, 
+        unitPrice: unitPrice, 
+        expirationDate: expDate, 
+    })
+      .then((res) => console.log(res))
+      .catch((err) => console.log(err));
   };
 
   return (
@@ -106,7 +101,7 @@ const Item: React.FC<ItemProps> = (props) => {
           label={props.label}
           onChange={(e) => handleChange(e, props.onChange)}
           value={props.value}
-          sx={{ width: "60%"}}
+          sx={{ width: "60%" }}
         />
       </Grid>
     </>
