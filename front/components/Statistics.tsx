@@ -13,7 +13,19 @@ const rows2 = [
   createData('Food', 123, 1, 234), 
   createData('Clothing', 1, 23,3)
 ]
-export const Statistics: React.FC = (props) => {
+
+export type Row = {
+  category: string, 
+  totalInStock: number, 
+  totalValueInStock: number, 
+  averagePriceInStock: number, 
+}
+
+type StatisticsProps = {
+  rows: Row[]
+}
+
+export const Statistics: React.FC<StatisticsProps> = ({rows}) => {
     return (
       <TableContainer component={Paper}>
         <Table>
@@ -26,7 +38,7 @@ export const Statistics: React.FC = (props) => {
           </TableHead>
           
           <TableBody>
-          {rows2.map((row) => (
+          {rows.map((row) => (
             <TableRow 
               key={row.category}
             >

@@ -49,7 +49,6 @@ public class ProductService {
     }
 
     public Product createProduct(Product product) {
-
         this.categories.add(product.getCategory());
         product.setCreationDate(LocalDateTime.now());
         product.setUpdateDate(LocalDateTime.now());

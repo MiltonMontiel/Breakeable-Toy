@@ -1,115 +1,97 @@
-import { DataGrid, GridColDef, GridRowsProp } from "@mui/x-data-grid";
-import { Button, Stack } from "@mui/material";
+"use client";
+import { DataGrid, GridColDef} from "@mui/x-data-grid";
+import {  Button, Modal, Stack } from "@mui/material";
 import { SearchMenu } from "@/components/SearchMenu";
-import { Statistics } from "@/components/Statistics";
-
-const rows: GridRowsProp = [
-  {
-    id: 1,
-    col1: "Food",
-    col2: "Watermelon",
-    col3: 123,
-    col4: "12/25/2024",
-    col5: "50",
-  },
-  {
-    id: 2,
-    col1: "Food",
-    col2: "Eatermelon",
-    col3: 234,
-    col4: "12/25/2024",
-    col5: "50",
-  },
-  {
-    id: 3,
-    col1: "Food",
-    col2: "WTtermelon",
-    col3: 234,
-    col4: "12/25/2024",
-    col5: "50",
-  },
-  {
-    id: 4,
-    col1: "Food",
-    col2: "rGtermelon",
-    col3: 23,
-    col4: "12/25/2024",
-    col5: "50",
-  },
-  {
-    id: 5,
-    col1: "Food",
-    col2: "Wrtermelon",
-    col3: "1.50",
-    col4: "12/25/2024",
-    col5: "50",
-  },
-  {
-    id: 6,
-    col1: "Food",
-    col2: "Wsdermelon",
-    col3: "1.50",
-    col4: "12/25/2024",
-    col5: "50",
-  },
-  {
-    id: 7,
-    col1: "Food",
-    col2: "Watsdmelon",
-    col3: "1.50",
-    col4: "12/25/2024",
-    col5: "50",
-  },
-  {
-    id: 8,
-    col1: "Food",
-    col2: "Watermelon",
-    col3: "1.50",
-    col4: "12/25/2024",
-    col5: "50",
-  },
-  {
-    id: 9,
-    col1: "Food",
-    col2: "Wasdfmelon",
-    col3: "1.50",
-    col4: "12/25/2024",
-    col5: "50",
-  },
-  {
-    id: 10,
-    col1: "Food",
-    col2: "Watermelon",
-    col3: "1.50",
-    col4: "12/25/2024",
-    col5: "50",
-  },
-  {
-    id: 11,
-    col1: "Food",
-    col2: "Wsdfhmelon",
-    col3: "1.50",
-    col4: "12/25/2024",
-    col5: "50",
-  },
-];
+import { Row, Statistics } from "@/components/Statistics";
+import { AxiosInstance } from "@/utils/axiosInstance";
+import React, { useEffect } from "react";
+import { CreateProductMenu } from "@/components/CreateProductMenu";
+import { Product } from "@/types/Product";
 
 const columns: GridColDef[] = [
-  { field: "col1", headerName: "Category", width: 150 },
-  { field: "col2", headerName: "Name", width: 150 },
-  { field: "col3", headerName: "Price", width: 150 },
-  { field: "col4", headerName: "Expiration Date", width: 200 },
-  { field: "col5", headerName: "Stock" },
+  { field: "category", headerName: "Category", width: 150 },
+  { field: "name", headerName: "Name", width: 150 },
+  { field: "price", headerName: "Price", width: 150 },
+  { field: "expDate", headerName: "Expiration Date", width: 200 },
+  { field: "inStock", headerName: "Quantity in Stock", minWidth: 200 },
 ];
 
+const parseProducts: any = (products: Product[]) => {
+  let parsed: any = [];
+
+  products.map((product) => {
+    parsed.push({
+      id: product.id,
+      category: product.category,
+      name: product.name,
+      price: product.unitPrice,
+      expDate: product.expirationDate,
+      inStock: product.quantityInStock,
+    });
+  });
+
+  return parsed;
+};
+
+const statsRows: Row[] = [
+  {
+    category: "Test", 
+    totalInStock: 12, 
+    totalValueInStock: 123, 
+    averagePriceInStock: 123,
+  }
+]
+
 export default function Home() {
+  const [products, setProducts] = React.useState(null);
+  const [categories, setCategories] = React.useState<string[]>([]);
+  const [modalOpen, setModalOpen] = React.useState<boolean>(false);
+
+  const handleOpenModal = () => setModalOpen(true);
+  const handleCloseModal = () => setModalOpen(false);
+
+  useEffect(() => {
+    getProducts();
+    getCategories();
+  }, []);
+
+  const getProducts = () => {
+    AxiosInstance.get("/products")
+      .then((response) => {
+        setProducts(parseProducts(response.data));
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
+
+  const getCategories = () => {
+    AxiosInstance.get("/products/categories")
+      .then((res) => {
+        setCategories(res.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
   return (
     <div style={{ width: "100%" }}>
       <Stack spacing={2}>
-        <SearchMenu />
-        <Button variant="contained">New product</Button>
-        <DataGrid rows={rows} columns={columns} checkboxSelection />
-        <Statistics />
+        <SearchMenu categories={categories} />
+        <Button variant="contained" onClick={handleOpenModal}>New product</Button>
+        <Modal
+          open={modalOpen}
+          onClose={handleCloseModal}
+          aria-labelledby='create-new-product'
+          aria-describedby="menu-for-new-product"
+        >
+        <CreateProductMenu getCategories={getCategories} getProducts={getProducts} closeModal={handleCloseModal}/> 
+        </Modal>
+        {products && (
+          <DataGrid rows={products} columns={columns} checkboxSelection />
+        )}
+        <Statistics rows={statsRows}/>
       </Stack>
     </div>
   );
