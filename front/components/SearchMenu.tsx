@@ -74,7 +74,7 @@ type TextFieldProps = {
   label: string;
 };
 
-const Text: React.FC<TextFieldProps> = ({ label }) => {
+export const TextInput: React.FC<TextFieldProps> = ({ label }) => {
   const [text, setText] = React.useState("");
 
   const handleChange = (e: any) => {
@@ -100,7 +100,7 @@ type SearchMenuProps = {
 export const SearchMenu: React.FC<SearchMenuProps> = ({ categories }) => {
   return (
     <Stack>
-      <Text label={"Name"} />
+      <TextInput label={"Name"} />
       <SelectMenu
         label={"Availability"}
         menuItems={["In stock", "Out of stock", "All"]}
