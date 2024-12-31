@@ -1,13 +1,12 @@
 "use client";
-import { DataGrid, GridColDef} from "@mui/x-data-grid";
-import {  Button, Modal, Stack } from "@mui/material";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import { Button, Modal, Stack } from "@mui/material";
 import { SearchMenu } from "@/components/SearchMenu";
 import { Row, Statistics } from "@/components/Statistics";
-import { AxiosInstance } from "@/utils/axiosInstance";
 import React, { useEffect } from "react";
 import { CreateProductMenu } from "@/components/CreateProductMenu";
 import { Product } from "@/types/Product";
-import { getProducts, getCategories} from "@/utils/api";
+import { getProducts, getCategories } from "@/utils/api";
 
 const columns: GridColDef[] = [
   { field: "category", headerName: "Category", width: 150 },
@@ -36,12 +35,12 @@ const parseProducts: any = (products: Product[]) => {
 
 const statsRows: Row[] = [
   {
-    category: "Test", 
-    totalInStock: 12, 
-    totalValueInStock: 123, 
+    category: "Test",
+    totalInStock: 12,
+    totalValueInStock: 123,
     averagePriceInStock: 123,
-  }
-]
+  },
+];
 
 export default function Home() {
   const [products, setProducts] = React.useState([]);
@@ -60,19 +59,21 @@ export default function Home() {
     <div style={{ width: "100%" }}>
       <Stack spacing={2}>
         <SearchMenu categories={categories} />
-        <Button variant="contained" onClick={handleOpenModal}>New product</Button>
+        <Button variant="contained" onClick={handleOpenModal}>
+          New product
+        </Button>
         <Modal
           open={modalOpen}
           onClose={handleCloseModal}
-          aria-labelledby='create-new-product'
+          aria-labelledby="create-new-product"
           aria-describedby="menu-for-new-product"
         >
-        <CreateProductMenu closeModal={handleCloseModal}/> 
+          <CreateProductMenu closeModal={handleCloseModal} />
         </Modal>
         {products && (
           <DataGrid rows={products} columns={columns} checkboxSelection />
         )}
-        <Statistics rows={statsRows}/>
+        <Statistics rows={statsRows} />
       </Stack>
     </div>
   );

@@ -22,9 +22,7 @@ export const handleChange = (e: any, f: any) => {
 type Props = {
   closeModal: any;
 };
-export const CreateProductMenu: React.FC<Props> = ({
-  closeModal,
-}) => {
+export const CreateProductMenu: React.FC<Props> = ({ closeModal }) => {
   const [name, setName] = React.useState<string>("");
   const [stock, setStock] = React.useState<number>(0);
   const [category, setCategory] = React.useState<string>("");
@@ -32,7 +30,7 @@ export const CreateProductMenu: React.FC<Props> = ({
   const [expDate, setExpDate] = React.useState("");
 
   const handleProduct = () => {
-    console.log("Doing...")
+    console.log("Doing...");
     AxiosInstance.post("/products", {
       name: name,
       category: category,
@@ -46,6 +44,20 @@ export const CreateProductMenu: React.FC<Props> = ({
     closeModal();
   };
 
+  console.log(unitPrice === undefined);
+
+  const fieldsAreValid = () => {
+    return (
+      name.length > 0 &&
+      name.length < 120 &&
+      category.length > 0 &&
+      stock > 0 &&
+      Object.keys(stock).length != 0 &&
+      unitPrice > 0 &&
+      Object.keys(unitPrice).length != 0
+    );
+  };
+
   return (
     <Box sx={style}>
       <Typography variant="h4" sx={{ marginBottom: 4 }}>
@@ -53,37 +65,57 @@ export const CreateProductMenu: React.FC<Props> = ({
       </Typography>
       <Grid container spacing={2}>
         <Item
+          required
+          error={name.length == 0 || name.length > 120}
+          helperText={"Must contain at most 120 characters."}
           id={"name-text-field"}
           label={"Name"}
           onChange={setName}
           value={name}
         />
         <Item
+          required
+          error={category.length == 0}
+          helperText=""
           id={"category-field"}
           label={"Category"}
           onChange={setCategory}
           value={category}
         />
         <Item
+          required
+          error={Object.keys(stock).length === 0 || stock < 0}
+          helperText=""
           id={"stock-text-field"}
           label={"Stock"}
           onChange={setStock}
           value={stock}
         />
         <Item
+          required
+          error={Object.keys(unitPrice).length === 0 || unitPrice < 0}
+          helperText=""
           id={"unit-price-text-field"}
           label={"Unit Price"}
           onChange={setUnitPrice}
           value={unitPrice}
         />
         <Item
+          required={false}
+          error={false}
+          helperText=""
           id={"exp-date-text-field"}
           label="Expiration Date"
           onChange={setExpDate}
           value={expDate}
         />
       </Grid>
-      <Button variant="contained" sx={{ marginTop: 4 }} onClick={handleProduct}>
+      <Button
+        disabled={!fieldsAreValid()}
+        variant="contained"
+        sx={{ marginTop: 4 }}
+        onClick={handleProduct}
+      >
         Create
       </Button>
     </Box>
@@ -95,7 +127,11 @@ type ItemProps = {
   label: string;
   onChange: any;
   value: any;
+  error: any;
+  helperText: string;
+  required: boolean;
 };
+
 const Item: React.FC<ItemProps> = (props) => {
   return (
     <>
@@ -105,8 +141,11 @@ const Item: React.FC<ItemProps> = (props) => {
 
       <Grid size={8}>
         <TextField
+          required={props.required}
+          error={props.error}
           id={props.id}
-          label={props.label}
+          label={props.required ? "Required" : "Optional"}
+          helperText={props.helperText}
           onChange={(e) => handleChange(e, props.onChange)}
           value={props.value}
           sx={{ width: "60%" }}
