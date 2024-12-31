@@ -71,7 +71,19 @@ export default function Home() {
           <CreateProductMenu closeModal={handleCloseModal} />
         </Modal>
         {products && (
-          <DataGrid rows={products} columns={columns} checkboxSelection />
+          <DataGrid  rows={products} columns={columns} 
+          initialState={{
+            pagination: {
+              paginationModel: {
+                pageSize: 10, 
+              }
+            }
+          }}
+          checkboxSelection 
+          disableRowSelectionOnClick 
+          />
+
+
         )}
         <Statistics rows={statsRows} />
       </Stack>
