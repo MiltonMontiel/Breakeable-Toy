@@ -6,7 +6,8 @@ import { Row, Statistics } from "@/components/Statistics";
 import React, { useEffect } from "react";
 import { CreateProductMenu } from "@/components/CreateProductMenu";
 import { getProducts, getCategories, getStatistics } from "@/utils/api";
-import { Statistic , Product} from "@/utils/types";
+import { Statistic, Product } from "@/utils/types";
+import { ProductMenu } from "@/components/ProductMenu";
 
 const columns: GridColDef[] = [
   { field: "category", headerName: "Category", width: 150 },
@@ -37,12 +38,11 @@ const parseStats: any = (stats: Statistic[]) => {
   let parsed: any = [];
   Object.entries(stats).forEach(([key, value]) => {
     parsed.push({
-      category: key, 
-      totalInStock: value.totalProductsInStock, 
-      totalValueInStock: value.totalValueInStock, 
+      category: key,
+      totalInStock: value.totalProductsInStock,
+      totalValueInStock: value.totalValueInStock,
       averagePriceInStock: value.averagePriceInStock,
-
-    })
+    });
     console.log(`Key: ${key}, Value: ${value}`);
   });
 
@@ -63,17 +63,28 @@ export default function Home() {
   const [categories, setCategories] = React.useState<string[]>([]);
   const [statistics, setStatistics] = React.useState([]);
   const [modalOpen, setModalOpen] = React.useState<boolean>(false);
+  const [outOfStock, setOutOfStock] = React.useState();
+  const [editMenuOpen, setEditMenuOpen] = React.useState<boolean>(false);
+  const [currentProduct, setCurrentProduct] = React.useState<any>({
+    id: "",
+    name: "",
+    category: "",
+    inStock: "",
+    price: "",
+    expDate: "",
+  });
 
   const handleOpenModal = () => setModalOpen(true);
   const handleCloseModal = () => setModalOpen(false);
+  const handleEditMenu = () => {
+    setEditMenuOpen(!editMenuOpen);
+  };
 
   useEffect(() => {
     getProducts(setProducts, parseProducts);
     getStatistics(setStatistics, parseStats);
     getCategories(setCategories);
-  }, [modalOpen]);
-
-  console.log(statistics)
+  }, [modalOpen, editMenuOpen]);
 
   return (
     <div style={{ width: "100%" }}>
@@ -88,7 +99,29 @@ export default function Home() {
           aria-labelledby="create-new-product"
           aria-describedby="menu-for-new-product"
         >
-          <CreateProductMenu closeModal={handleCloseModal} />
+          <ProductMenu
+            closeModal={handleCloseModal}
+            productId={""}
+            productName={""}
+            productCategory={""}
+            productSock={0}
+            productUnitPrice={0}
+            productExpDate={""}
+            variant="create"
+          />
+        </Modal>
+
+        <Modal open={editMenuOpen} onClose={handleEditMenu}>
+          <ProductMenu
+            closeModal={handleEditMenu}
+            productId={currentProduct.id}
+            productName={currentProduct.name}
+            productCategory={currentProduct.category}
+            productSock={currentProduct.inStock}
+            productUnitPrice={currentProduct.price}
+            productExpDate={""}
+            variant="edit"
+          />
         </Modal>
         {products && (
           <DataGrid
@@ -103,6 +136,13 @@ export default function Home() {
             }}
             checkboxSelection
             disableRowSelectionOnClick
+            onRowSelectionModelChange={(e) => {
+              console.log(e);
+            }}
+            onRowDoubleClick={(e: any) => {
+              setCurrentProduct(e.row);
+              handleEditMenu();
+            }}
           />
         )}
         <Statistics rows={statistics} />
