@@ -4,8 +4,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -87,5 +89,25 @@ public class ProductService {
 
     public HashMap<String, Statistics> getStatistics() {
         return this.statistics;
+    }
+
+    public List<Product> getFilteredElements(String name, ArrayList<String> categories, String availiability) {
+        return this.products.stream()
+                .filter(product -> (name == null || product.getName().contains(name)))
+                .filter(product -> (categories.isEmpty() ||
+                        categories.contains(product.getCategory())))
+                .filter(product -> (availiability == null || this.matchesAvailability(availiability, product)))
+                .collect(Collectors.toList());
+    }
+
+    private boolean matchesAvailability(String availability, Product product) {
+        switch (availability) {
+            case "In Stock":
+                return product.getQuantityInStock() > 0;
+            case "Out Of Stock":
+                return product.getQuantityInStock() == 0;
+            default:
+                return true;
+        }
     }
 }
