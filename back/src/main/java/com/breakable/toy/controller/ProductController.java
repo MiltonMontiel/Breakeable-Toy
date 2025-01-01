@@ -5,6 +5,7 @@ import com.breakable.toy.model.Result;
 import com.breakable.toy.model.Result.Status;
 import com.breakable.toy.service.ProductService;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/products")
@@ -25,26 +27,12 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
-    // List products
     @GetMapping
-    ResponseEntity<Iterable<Product>> getProducts() {
-        return new ResponseEntity<>(productService.getAllProducts(), HttpStatus.OK);
+    ResponseEntity<Iterable<Product>> getProducts(@RequestParam String name,
+            @RequestParam ArrayList<String> categories, @RequestParam String availability) {
+        Iterable<Product> products = productService.getFilteredElements(name, categories, availability);
+        return new ResponseEntity<>(products, HttpStatus.OK);
     }
-
-    // @GetMapping("/{id}")
-    // public ResponseEntity<Result<Product>> getProductById(@PathVariable String
-    // id) {
-    // if (productService.containsProduct(id)) {
-    // Product retrievedProduct = productService.getProductById(id);
-    // return ResponseEntity.status(HttpStatus.OK)
-    // .body(new Result<Product>(Status.Ok, "Product retrieved correctly",
-    // retrievedProduct));
-    // } else {
-    // return ResponseEntity.status(HttpStatus.NOT_FOUND)
-    // .body(new Result<Product>(Status.Err, "Product with id: " + id + " not
-    // found", null));
-    // }
-    // }
 
     // Gets the list of all available categories.
     @GetMapping("/categories")
