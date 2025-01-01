@@ -1,4 +1,3 @@
-
 export type Product = {
   category: string;
   expirationDate?: string;
@@ -7,3 +6,10 @@ export type Product = {
   quantityInStock: number;
   unitPrice: number;
 };
+
+export type Statistic = {
+    category: string, 
+    totalProductsInStock: number, 
+    totalValueInStock: number, 
+    averagePriceInStock: number, 
+}
