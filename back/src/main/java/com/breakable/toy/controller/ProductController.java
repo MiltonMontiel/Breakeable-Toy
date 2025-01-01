@@ -5,6 +5,8 @@ import com.breakable.toy.model.Result;
 import com.breakable.toy.model.Result.Status;
 import com.breakable.toy.service.ProductService;
 
+import java.util.HashMap;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,6 +50,11 @@ public class ProductController {
     @GetMapping("/categories")
     ResponseEntity<Iterable<String>> getCategoriesList() {
         return new ResponseEntity<>(productService.getCategories(), HttpStatus.OK);
+    }
+
+    @GetMapping("/statistics")
+    public ResponseEntity<HashMap<String, Statistics>> getStatistics() {
+        return new ResponseEntity<>(productService.getStatistics(), HttpStatus.OK);
     }
 
     @PostMapping

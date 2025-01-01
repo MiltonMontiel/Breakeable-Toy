@@ -2,6 +2,7 @@ package com.breakable.toy.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -9,6 +10,7 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 
 import com.breakable.toy.model.Product;
+import com.breakable.toy.model.Statistics;
 
 @Service
 public class ProductService {
@@ -16,6 +18,7 @@ public class ProductService {
     private Set<String> categories = new HashSet<String>();
     private ArrayList<Product> products = new ArrayList<Product>();
     private Set<String> ids = new HashSet<String>();
+    private HashMap<String, Statistics> statistics = new HashMap<>();
 
     public ProductService() {
         this.createProduct(
@@ -50,7 +53,19 @@ public class ProductService {
         product.setCreationDate(LocalDateTime.now());
         product.setUpdateDate(LocalDateTime.now());
         this.products.add(product);
+
+        // Updating stats
+        updateStats(product);
+
         return product;
+    }
+
+    public void updateStats(Product product) {
+        if (this.statistics.containsKey(product.getCategory())) {
+            statistics.get(product.getCategory()).addProduct(product);
+        } else {
+            statistics.put(product.getCategory(), new Statistics(product));
+        }
     }
 
     public Product updateProduct(Product product) {
@@ -58,11 +73,19 @@ public class ProductService {
 
         for (Product p : this.products) {
             if (p.getId().equals(product.getId())) {
+                // Removes the past product from the statistics.
+                statistics.get(product.getCategory()).removeProduct(p);
                 productIndex = this.products.indexOf(p);
+                // Adds the updated product to the statistics.
+                updateStats(product);
                 this.products.set(productIndex, product);
             }
         }
 
         return product;
+    }
+
+    public HashMap<String, Statistics> getStatistics() {
+        return this.statistics;
     }
 }
