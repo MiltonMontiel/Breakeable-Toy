@@ -72,15 +72,27 @@ public class ProductService {
 
     public Product updateProduct(Product product) {
         int productIndex = -1;
-
+        System.out.println(product);
         for (Product p : this.products) {
             if (p.getId().equals(product.getId())) {
-                // Removes the past product from the statistics.
-                statistics.get(product.getCategory()).removeProduct(p);
-                productIndex = this.products.indexOf(p);
-                // Adds the updated product to the statistics.
-                updateStats(product);
-                this.products.set(productIndex, product);
+                // If the category remains the same:
+                if (statistics.containsKey(product.getCategory())) {
+                    // Removes the past product from the statistics.
+                    statistics.get(product.getCategory()).removeProduct(p);
+                    productIndex = this.products.indexOf(p);
+                    // Adds the updated product to the statistics.
+                    updateStats(product);
+                    this.products.set(productIndex, product);
+                } else {
+                    // Removes the contribution of the past product to
+                    // the past category
+                    statistics.get(p.getCategory()).removeProduct(p);
+                    productIndex = this.products.indexOf(p);
+                    // Adds the updated product to the statistics.
+                    updateStats(product);
+                    this.products.set(productIndex, product);
+                }
+                this.categories.add(product.getCategory());
             }
         }
 
