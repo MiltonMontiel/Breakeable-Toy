@@ -100,6 +100,7 @@ export default function Home() {
             productUnitPrice={0}
             productExpDate={null}
             variant="create"
+            categories={categories}
           />
         </Modal>
 
@@ -113,6 +114,7 @@ export default function Home() {
             productUnitPrice={currentProduct.price}
             productExpDate={dayjs(currentProduct.expDate)}
             variant="edit"
+            categories={categories}
           />
         </Modal>
         {products && (

@@ -1,4 +1,10 @@
-import { Box, Button, TextField, Typography } from "@mui/material";
+import {
+  Autocomplete,
+  Box,
+  Button,
+  TextField,
+  Typography,
+} from "@mui/material";
 import React from "react";
 import Grid from "@mui/material/Grid2";
 import { postProduct, updateProduct } from "@/utils/api";
@@ -11,7 +17,7 @@ const style = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: "60%",
+  width: "50%",
   bgcolor: "white",
   boxshadow: 24,
   borderRadius: 2,
@@ -27,6 +33,7 @@ type Props = {
   productUnitPrice: number;
   productExpDate: Dayjs | null;
   variant: "create" | "edit";
+  categories: string[]
 };
 
 type ItemProps = {
@@ -52,6 +59,7 @@ export const ProductMenu: React.FC<Props> = ({
   productUnitPrice,
   productExpDate,
   variant,
+  categories, 
 }) => {
   const [name, setName] = React.useState<string>(productName);
   const [stock, setStock] = React.useState<number>(productSock);
@@ -72,13 +80,29 @@ export const ProductMenu: React.FC<Props> = ({
   const handleProduct = () => {
     switch (variant) {
       case "create":
-        postProduct(name, category, stock, unitPrice, expDate?.toISOString() as string);
+        postProduct(
+          name,
+          category,
+          stock,
+          unitPrice,
+          expDate?.toISOString() as string
+        );
       case "edit":
-        updateProduct(productId, name, category, stock, unitPrice, (typeof expDate != null && expDate?.isValid() ? expDate?.toISOString() : null) as string | null);
+        updateProduct(
+          productId,
+          name,
+          category,
+          stock,
+          unitPrice,
+          (typeof expDate != null && expDate?.isValid()
+            ? expDate?.toISOString()
+            : null) as string | null
+        );
     }
     // TODO: Close modal on sucess!!!!
     closeModal();
   };
+  console.log("Category: " + category);
   return (
     <Box sx={style}>
       <Typography variant="h4" sx={{ marginBottom: 4 }}>
@@ -95,15 +119,19 @@ export const ProductMenu: React.FC<Props> = ({
           onChange={setName}
           value={name}
         />
-        <Item
-          required
-          error={category.length == 0}
-          helperText=""
-          id={"category-field"}
-          label={"Category"}
-          onChange={setCategory}
-          value={category}
-        />
+        <Grid size={4} alignContent={"center"}>
+          <Typography>Category</Typography>
+        </Grid>
+        <Grid size={8}>
+          <Autocomplete
+          freeSolo
+            id="category-autocomplete"
+            onInputChange={(e, newInputValue) => setCategory(newInputValue)}
+            value={category}
+            options={categories}
+            renderInput={(params) => <TextField {...params} label="Required" />}
+          />
+        </Grid>
         <Item
           required
           error={stock < 0}
@@ -125,9 +153,12 @@ export const ProductMenu: React.FC<Props> = ({
         <Grid size={4} alignContent={"center"}>
           <Typography>Expiration Date</Typography>
         </Grid>
-        <Grid size={8} >
+        <Grid size={8}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DatePicker value={expDate} onChange={(newValue) => setExpDate(newValue)}/>
+            <DatePicker
+              value={expDate}
+              onChange={(newValue) => setExpDate(newValue)}
+            />
           </LocalizationProvider>
         </Grid>
       </Grid>
@@ -168,7 +199,7 @@ const Item: React.FC<ItemProps> = ({
           helperText={helperText}
           onChange={(e) => handleChange(e, onChange)}
           value={value}
-          sx={{ width: "60%" }}
+          sx={{ width: "100%" }}
         />
       </Grid>
     </>
