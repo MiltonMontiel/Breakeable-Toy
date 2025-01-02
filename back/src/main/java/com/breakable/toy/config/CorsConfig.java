@@ -8,9 +8,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class CorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        final String commonOrigin = "http://localhost:3000";
+        final String commonOrigin = "http://localhost:8080";
         registry.addMapping("/products/**")
                 .allowedOrigins(commonOrigin)
-                .allowedMethods("GET", "POST", "PUT");
+                .allowedMethods("GET", "POST", "PUT", "DELETE");
     }
 }

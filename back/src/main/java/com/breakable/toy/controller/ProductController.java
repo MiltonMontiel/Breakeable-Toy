@@ -5,9 +5,13 @@ import com.breakable.toy.model.Result;
 import com.breakable.toy.model.Result.Status;
 import com.breakable.toy.service.ProductService;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/products")
@@ -23,22 +28,11 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
-    // List products
     @GetMapping
-    ResponseEntity<Iterable<Product>> getProducts() {
-        return new ResponseEntity<>(productService.getAllProducts(), HttpStatus.OK);
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<Result<Product>> getProductById(@PathVariable String id) {
-        if (productService.containsProduct(id)) {
-            Product retrievedProduct = productService.getProductById(id);
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(new Result<Product>(Status.Ok, "Product retrieved correctly", retrievedProduct));
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new Result<Product>(Status.Err, "Product with id: " + id + " not found", null));
-        }
+    ResponseEntity<Iterable<Product>> getProducts(@RequestParam String name,
+            @RequestParam ArrayList<String> categories, @RequestParam String availability) {
+        Iterable<Product> products = productService.getFilteredElements(name, categories, availability);
+        return new ResponseEntity<>(products, HttpStatus.OK);
     }
 
     // Gets the list of all available categories.
@@ -47,12 +41,22 @@ public class ProductController {
         return new ResponseEntity<>(productService.getCategories(), HttpStatus.OK);
     }
 
+    @GetMapping("/statistics")
+    public ResponseEntity<HashMap<String, Statistics>> getStatistics() {
+        return new ResponseEntity<>(productService.getStatistics(), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteProduct(@PathVariable String id) {
+        productService.deleteProduct(id);
+        return new ResponseEntity<>("Sucessfully deleted" + id, HttpStatus.OK);
+    }
+
     @PostMapping
     ResponseEntity<Result<Product>> postProduct(@RequestBody Product product) {
         // Check if product fields are valid
         if (product.fieldsAreValid()) {
             Product created_product = productService.createProduct(product);
-            created_product.setId();
             return ResponseEntity.status(HttpStatus.OK)
                     .body(new Result<Product>(Status.Ok, "Sucessfully created product", created_product));
         } else {

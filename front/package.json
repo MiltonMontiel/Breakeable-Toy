@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev -p 8080 --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -13,7 +13,11 @@
     "@emotion/styled": "^11.14.0",
     "@mui/material": "^6.2.0",
     "@mui/x-data-grid": "^7.23.2",
+    "@mui/x-date-pickers": "^7.23.3",
+    "axios": "^1.7.9",
+    "dayjs": "^1.11.13",
     "next": "15.1.0",
+    "qs": "^6.13.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

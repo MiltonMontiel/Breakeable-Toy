@@ -1,12 +1,20 @@
 "use client";
-import { DataGrid, GridColDef} from "@mui/x-data-grid";
-import {  Button, Modal, Stack } from "@mui/material";
+import {
+  DataGrid,
+  GridCellParams,
+  gridClasses,
+  GridColDef,
+  GridRowSelectionModel,
+} from "@mui/x-data-grid";
+import { Box, Button, Modal, Stack } from "@mui/material";
 import { SearchMenu } from "@/components/SearchMenu";
-import { Row, Statistics } from "@/components/Statistics";
-import { AxiosInstance } from "@/utils/axiosInstance";
+import { Statistics } from "@/components/Statistics";
 import React, { useEffect } from "react";
-import { CreateProductMenu } from "@/components/CreateProductMenu";
-import { Product } from "@/types/Product";
+import { getProducts, getCategories, getStatistics } from "@/utils/api";
+import { Statistic, Product } from "@/utils/types";
+import { ProductMenu } from "@/components/ProductMenu";
+import dayjs, { Dayjs } from "dayjs";
+import { convertExpDate, StyledDataGrid } from "@/components/StyledDataGrid";
 
 const columns: GridColDef[] = [
   { field: "category", headerName: "Category", width: 150 },
@@ -14,6 +22,7 @@ const columns: GridColDef[] = [
   { field: "price", headerName: "Price", width: 150 },
   { field: "expDate", headerName: "Expiration Date", width: 200 },
   { field: "inStock", headerName: "Quantity in Stock", minWidth: 200 },
+  { field: "action", headerName: "Actions" },
 ];
 
 const parseProducts: any = (products: Product[]) => {
@@ -25,7 +34,7 @@ const parseProducts: any = (products: Product[]) => {
       category: product.category,
       name: product.name,
       price: product.unitPrice,
-      expDate: product.expirationDate,
+      expDate: product.expirationDate ? dayjs(product.expirationDate) : null,
       inStock: product.quantityInStock,
     });
   });
@@ -33,65 +42,166 @@ const parseProducts: any = (products: Product[]) => {
   return parsed;
 };
 
-const statsRows: Row[] = [
-  {
-    category: "Test", 
-    totalInStock: 12, 
-    totalValueInStock: 123, 
-    averagePriceInStock: 123,
-  }
-]
+const parseStats: any = (stats: Statistic[]) => {
+  let parsed: any = [];
+  Object.entries(stats).forEach(([key, value]) => {
+    parsed.push({
+      category: key,
+      totalInStock: value.totalProductsInStock,
+      totalValueInStock: value.totalValueInStock,
+      averagePriceInStock: value.averagePriceInStock,
+    });
+  });
+
+  return parsed;
+};
 
 export default function Home() {
-  const [products, setProducts] = React.useState(null);
+  const [products, setProducts] = React.useState([]);
   const [categories, setCategories] = React.useState<string[]>([]);
+  const [statistics, setStatistics] = React.useState([]);
   const [modalOpen, setModalOpen] = React.useState<boolean>(false);
+  const [editMenuOpen, setEditMenuOpen] = React.useState<boolean>(false);
+  const [currentProduct, setCurrentProduct] = React.useState<any>({
+    id: "",
+    name: "",
+    category: "",
+    inStock: "",
+    price: "",
+    expDate: "",
+  });
+  const [focused, setFocused] = React.useState<GridRowSelectionModel>([]);
 
   const handleOpenModal = () => setModalOpen(true);
   const handleCloseModal = () => setModalOpen(false);
+  const handleEditMenu = () => {
+    setEditMenuOpen(!editMenuOpen);
+  };
+  const handleFocusedChange = (newSelection: string[]) => {
+    const unfocused = focused.filter((id: any) => !newSelection.includes(id));
+    const newlyFocused = newSelection.filter((id: any) => focused.includes(id));
+
+    console.log("Unfocused " + unfocused);
+    console.log("Newly " + newlyFocused);
+    unfocused.forEach((id) => console.log("Deselected " + id));
+    newlyFocused.forEach((id) => console.log("Newly selected " + id));
+
+    setFocused(newSelection);
+  };
 
   useEffect(() => {
-    getProducts();
-    getCategories();
-  }, []);
-
-  const getProducts = () => {
-    AxiosInstance.get("/products")
-      .then((response) => {
-        setProducts(parseProducts(response.data));
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }
-
-  const getCategories = () => {
-    AxiosInstance.get("/products/categories")
-      .then((res) => {
-        setCategories(res.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
+    getProducts(setProducts, parseProducts, "", [], "");
+    getStatistics(setStatistics, parseStats);
+    getCategories(setCategories);
+  }, [modalOpen, editMenuOpen]);
 
   return (
     <div style={{ width: "100%" }}>
       <Stack spacing={2}>
-        <SearchMenu categories={categories} />
-        <Button variant="contained" onClick={handleOpenModal}>New product</Button>
+        <SearchMenu
+          categories={categories}
+          getProducts={(name: any, categories: any, availability: any) =>
+            getProducts(
+              setProducts,
+              parseProducts,
+              name,
+              categories,
+              availability
+            )
+          }
+        />
+        <Button variant="contained" onClick={handleOpenModal}>
+          New product
+        </Button>
         <Modal
           open={modalOpen}
           onClose={handleCloseModal}
-          aria-labelledby='create-new-product'
+          aria-labelledby="create-new-product"
           aria-describedby="menu-for-new-product"
         >
-        <CreateProductMenu getCategories={getCategories} getProducts={getProducts} closeModal={handleCloseModal}/> 
+          <ProductMenu
+            closeModal={handleCloseModal}
+            productId={""}
+            productName={""}
+            productCategory={""}
+            productSock={0}
+            productUnitPrice={0}
+            productExpDate={null}
+            variant="create"
+            categories={categories}
+          />
+        </Modal>
+
+        <Modal open={editMenuOpen} onClose={handleEditMenu}>
+          <ProductMenu
+            closeModal={handleEditMenu}
+            productId={currentProduct.id}
+            productName={currentProduct.name}
+            productCategory={currentProduct.category}
+            productSock={currentProduct.inStock}
+            productUnitPrice={currentProduct.price}
+            productExpDate={dayjs(currentProduct.expDate)}
+            variant="edit"
+            categories={categories}
+          />
         </Modal>
         {products && (
-          <DataGrid rows={products} columns={columns} checkboxSelection />
+          <Box
+            sx={{
+              [`.${gridClasses.cell}.OK`]: {
+                backgroundColor: "yellow",
+              },
+              [`.${gridClasses.cell}.WARN`]: {
+                backgroundColor: "red",
+              },
+              [`.${gridClasses.cell}.NONE`]: {
+                textDecoration: "line-through"
+              },
+            }}
+          >
+            <StyledDataGrid
+              rows={products}
+              columns={columns}
+              initialState={{
+                pagination: {
+                  paginationModel: {
+                    pageSize: 10,
+                  },
+                },
+              }}
+              checkboxSelection
+              disableRowSelectionOnClick
+              onRowSelectionModelChange={(e) =>
+                handleFocusedChange(e as string[])
+              }
+              // onRowSelectionModelChange={(e, f) => {
+              //   setFocused(e);
+              // }}
+              onRowDoubleClick={(e: any) => {
+                setCurrentProduct(e.row);
+                handleEditMenu();
+              }}
+              getRowClassName={(params) =>
+                `super-app-theme--${convertExpDate(params.row.expDate)}`
+              }
+              getCellClassName={(params: GridCellParams<any, any, any>) => {
+                if (params.row.inStock == 0) {
+                  return "NONE";
+                }
+                if (params.field === "inStock") {
+                  if (params?.value >= 5 && params.value <= 10) {
+                    return "OK";
+                  } else if (params?.value < 5 && params?.value > 0) {
+                    return "WARN";
+                  }
+                }
+                return "";
+              }}
+              rowSelectionModel={focused}
+            />
+          </Box>
         )}
-        <Statistics rows={statsRows}/>
+        <Statistics rows={statistics} />
       </Stack>
     </div>
   );

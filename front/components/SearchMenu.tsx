@@ -41,16 +41,22 @@ export const TextInput: React.FC<TextFieldProps> = ({ label }) => {
 
 type SearchMenuProps = {
   categories: string[];
+  getProducts: any;
 };
 
-export const SearchMenu: React.FC<SearchMenuProps> = ({ categories }) => {
+export const SearchMenu: React.FC<SearchMenuProps> = ({ categories, getProducts }) => {
   const [filterName, setFilterName] = React.useState<string>("");
   const [categoriesFilter, setCategoriesFilter] = React.useState<string[]>([]);
-  const [availabilityFiler, setAvailabilityFilter] = React.useState<string>("");
+  const [availabilityFilter, setAvailabilityFilter] = React.useState<string>("");
 
+  const filterProducts = () => {
+    getProducts(filterName, categoriesFilter, availabilityFilter);
+  }
+
+ 
   return (
     <Box>
-      <Typography variant={"h5"} sx={{ marginBottom: 4 }}>
+      <Typography variant={"h4"} sx={{ marginBottom: 4 }}>
         Search a product
       </Typography>
       <Grid container spacing={2}>
@@ -80,7 +86,7 @@ export const SearchMenu: React.FC<SearchMenuProps> = ({ categories }) => {
               multiple
             >
               {categories.map((item, id) => (
-                <MenuItem key={id} value={id}>
+                <MenuItem key={id} value={item}>
                   {item}
                 </MenuItem>
               ))}
@@ -97,11 +103,11 @@ export const SearchMenu: React.FC<SearchMenuProps> = ({ categories }) => {
             <InputLabel>Availability</InputLabel>
             <Select
               onChange={(e) => handleChange(e, setAvailabilityFilter)}
-              value={availabilityFiler}
+              value={availabilityFilter}
               label={"Availability"}
             >
-              {["In Stock", "Out of Stock", "All"].map((item, id) => (
-                <MenuItem key={id} value={id}>
+              {["In Stock", "Out Of Stock", "All"].map((item, id) => (
+                <MenuItem key={id} value={item}>
                   {item}
                 </MenuItem>
               ))}
@@ -110,8 +116,18 @@ export const SearchMenu: React.FC<SearchMenuProps> = ({ categories }) => {
         </Grid>
 
         <Grid size={2}>
-          <Button variant="contained" sx={{ width: "100%" }}>
+          <Button variant="contained" sx={{ width: "100%" }} onClick={filterProducts}>
             Search
+          </Button>
+        </Grid>
+        <Grid size={2}>
+          <Button variant="contained" sx={{ width: "100%" }} onClick={() => {
+            setAvailabilityFilter("")
+            setCategoriesFilter([])
+            setFilterName("")
+            filterProducts()
+          }}>
+          Remove filters
           </Button>
         </Grid>
       </Grid>
