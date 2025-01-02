@@ -7,7 +7,8 @@ import React, { useEffect } from "react";
 import { getProducts, getCategories, getStatistics } from "@/utils/api";
 import { Statistic, Product } from "@/utils/types";
 import { ProductMenu } from "@/components/ProductMenu";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
+import { darken, lighten, styled, Theme } from '@mui/material/styles';
 
 const columns: GridColDef[] = [
   { field: "category", headerName: "Category", width: 150 },
@@ -15,6 +16,7 @@ const columns: GridColDef[] = [
   { field: "price", headerName: "Price", width: 150 },
   { field: "expDate", headerName: "Expiration Date", width: 200 },
   { field: "inStock", headerName: "Quantity in Stock", minWidth: 200 },
+  {field: "action", headerName: "Actions"}
 ];
 
 const parseProducts: any = (products: Product[]) => {
@@ -48,6 +50,23 @@ const parseStats: any = (stats: Statistic[]) => {
   return parsed;
 };
 
+const today = dayjs();
+
+const convertExpDate: any = (date: Dayjs | null) => {
+  if (date === null) {
+    return 0  
+  }
+
+  let difference = date.diff(today, 'weeks');
+  console.log(difference);
+  if (difference > 2) {
+    return "OK"
+  } else if (difference <= 2 && difference >= 1) {
+    return "WARN"
+  } else {
+    return "ERR"
+  }
+}
 
 export default function Home() {
   const [products, setProducts] = React.useState([]);
@@ -129,7 +148,7 @@ export default function Home() {
           />
         </Modal>
         {products && (
-          <DataGrid
+          <StyledDataGrid
             rows={products}
             columns={columns}
             initialState={{
@@ -150,6 +169,7 @@ export default function Home() {
               setCurrentProduct(e.row);
               handleEditMenu();
             }}
+            getRowClassName={(params) => `super-app-theme--${convertExpDate(params.row.expDate)}`}
           
             rowSelectionModel={focused}
           />
@@ -159,3 +179,51 @@ export default function Home() {
     </div>
   );
 }
+
+const getBackgroundColor = (color: string, theme: Theme, coefficient: number) => ({
+  backgroundColor: darken(color, coefficient),
+  ...theme.applyStyles('light', {
+    backgroundColor: lighten(color, coefficient),
+  }),
+});
+
+const StyledDataGrid = styled(DataGrid)(({ theme }) => ({
+  '& .super-app-theme--OK': {
+    ...getBackgroundColor(theme.palette.success.main, theme, 0.5),
+    '&:hover': {
+      ...getBackgroundColor(theme.palette.success.main, theme, 0.4),
+    },
+    '&.Mui-selected': {
+      ...getBackgroundColor(theme.palette.success.main, theme, 0.5),
+      '&:hover': {
+        ...getBackgroundColor(theme.palette.success.main, theme, 0.4),
+      },
+    },
+  },
+  '& .super-app-theme--WARN': {
+    ...getBackgroundColor(theme.palette.warning.main, theme, 0.4),
+    '&:hover': {
+      ...getBackgroundColor(theme.palette.warning.main, theme, 0.2),
+    },
+    '&.Mui-selected': {
+      ...getBackgroundColor(theme.palette.warning.main, theme, 0.5),
+      '&:hover': {
+        ...getBackgroundColor(theme.palette.warning.main, theme, 0.4),
+      },
+    },
+  },
+  '& .super-app-theme--ERR': {
+    ...getBackgroundColor(theme.palette.error.main, theme, 0.7),
+    '&:hover': {
+      ...getBackgroundColor(theme.palette.error.main, theme, 0.6),
+    },
+    '&.Mui-selected': {
+      ...getBackgroundColor(theme.palette.error.main, theme, 0.5),
+      '&:hover': {
+        ...getBackgroundColor(theme.palette.error.main, theme, 0.4),
+      },
+    },
+  },
+}));
+
+
