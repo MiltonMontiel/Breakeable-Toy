@@ -154,6 +154,9 @@ export default function Home() {
               [`.${gridClasses.cell}.WARN`]: {
                 backgroundColor: "red",
               },
+              [`.${gridClasses.cell}.NONE`]: {
+                textDecoration: "line-through"
+              },
             }}
           >
             <StyledDataGrid
@@ -182,11 +185,13 @@ export default function Home() {
                 `super-app-theme--${convertExpDate(params.row.expDate)}`
               }
               getCellClassName={(params: GridCellParams<any, any, any>) => {
+                if (params.row.inStock == 0) {
+                  return "NONE";
+                }
                 if (params.field === "inStock") {
-                  console.log(params);
                   if (params?.value >= 5 && params.value <= 10) {
                     return "OK";
-                  } else if (params?.value < 5) {
+                  } else if (params?.value < 5 && params?.value > 0) {
                     return "WARN";
                   }
                 }
