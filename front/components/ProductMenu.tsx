@@ -1,11 +1,10 @@
 import { Box, Button, TextField, Typography } from "@mui/material";
-import React, { experimental_taintUniqueValue } from "react";
+import React from "react";
 import Grid from "@mui/material/Grid2";
-import { AxiosInstance } from "@/utils/axiosInstance";
 import { postProduct, updateProduct } from "@/utils/api";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import dayjs, { Dayjs } from "dayjs";
+import { Dayjs } from "dayjs";
 
 const style = {
   position: "absolute",
@@ -15,7 +14,7 @@ const style = {
   width: "60%",
   bgcolor: "white",
   boxshadow: 24,
-  borderradius: 2,
+  borderRadius: 2,
   p: 4,
 };
 
@@ -75,7 +74,7 @@ export const ProductMenu: React.FC<Props> = ({
       case "create":
         postProduct(name, category, stock, unitPrice, expDate?.toISOString() as string);
       case "edit":
-        updateProduct(productId, name, category, stock, unitPrice, (typeof expDate != null ? expDate?.toISOString() : null) as string | null);
+        updateProduct(productId, name, category, stock, unitPrice, (typeof expDate != null && expDate?.isValid() ? expDate?.toISOString() : null) as string | null);
     }
     // TODO: Close modal on sucess!!!!
     closeModal();

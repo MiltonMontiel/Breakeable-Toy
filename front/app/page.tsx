@@ -26,7 +26,7 @@ const parseProducts: any = (products: Product[]) => {
       category: product.category,
       name: product.name,
       price: product.unitPrice,
-      expDate: product.expirationDate,
+      expDate: product.expirationDate ? dayjs(product.expirationDate) : null,
       inStock: product.quantityInStock,
     });
   });
