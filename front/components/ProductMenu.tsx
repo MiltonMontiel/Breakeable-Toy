@@ -61,7 +61,7 @@ export const ProductMenu: React.FC<Props> = ({
       name.length > 0 &&
       name.length < 120 &&
       category.length > 0 &&
-      stock > 0 &&
+      stock >= 0 &&
       unitPrice > 0 
     );
   };
@@ -70,6 +70,7 @@ export const ProductMenu: React.FC<Props> = ({
     console.log("Doing...");
     switch (variant) {
       case "create":
+        // TODO: Refactor this!
         AxiosInstance.post("/products", {
           name: name,
           category: category,
@@ -77,10 +78,10 @@ export const ProductMenu: React.FC<Props> = ({
           unitPrice: unitPrice,
           expirationDate: expDate,
         })
-          .then((res) => console.log(res))
-          .catch((err) => console.log(err));
+          .then((res: any) => console.log(res))
+          .catch((err: any) => console.log(err));
       case "edit":
-        console.log(productId);
+        // TODO: Refactor this!
         AxiosInstance.put(`/products/${productId}`, {
           id: productId,
           name: name,  
@@ -89,8 +90,8 @@ export const ProductMenu: React.FC<Props> = ({
           unitPrice: unitPrice,
           expirationDate: expDate,
         })
-          .then((res) => console.log(res))
-          .catch((err) => console.log(err));
+          .then((res: any) => console.log(res))
+          .catch((err: any) => console.log(err));
     }
     // TODO: Close modal on sucess!!!!
     closeModal();

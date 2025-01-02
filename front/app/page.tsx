@@ -63,7 +63,6 @@ export default function Home() {
   const [categories, setCategories] = React.useState<string[]>([]);
   const [statistics, setStatistics] = React.useState([]);
   const [modalOpen, setModalOpen] = React.useState<boolean>(false);
-  const [outOfStock, setOutOfStock] = React.useState();
   const [editMenuOpen, setEditMenuOpen] = React.useState<boolean>(false);
   const [currentProduct, setCurrentProduct] = React.useState<any>({
     id: "",
@@ -81,15 +80,17 @@ export default function Home() {
   };
 
   useEffect(() => {
-    getProducts(setProducts, parseProducts);
+    getProducts(setProducts, parseProducts, "",[],"");
     getStatistics(setStatistics, parseStats);
     getCategories(setCategories);
-  }, [modalOpen, editMenuOpen]);
+  }, [modalOpen, editMenuOpen ]);
+
+  console.log(products)
 
   return (
     <div style={{ width: "100%" }}>
       <Stack spacing={2}>
-        <SearchMenu categories={categories} />
+        <SearchMenu categories={categories}  getProducts={(name: any, categories: any, availability: any) => getProducts(setProducts, parseProducts, name, categories, availability)}/> 
         <Button variant="contained" onClick={handleOpenModal}>
           New product
         </Button>
