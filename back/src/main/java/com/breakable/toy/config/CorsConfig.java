@@ -11,6 +11,6 @@ public class CorsConfig implements WebMvcConfigurer {
         final String commonOrigin = "http://localhost:8080";
         registry.addMapping("/products/**")
                 .allowedOrigins(commonOrigin)
-                .allowedMethods("GET", "POST", "PUT");
+                .allowedMethods("GET", "POST", "PUT", "DELETE");
     }
 }
