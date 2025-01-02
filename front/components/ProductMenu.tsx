@@ -107,7 +107,7 @@ export const ProductMenu: React.FC<Props> = ({
     deleteProduct(productId);
     closeModal();
   }
-  console.log("Category: " + category);
+
   return (
     <Box sx={style}>
       <Typography variant="h4" sx={{ marginBottom: 4 }}>

@@ -56,7 +56,7 @@ export const SearchMenu: React.FC<SearchMenuProps> = ({ categories, getProducts 
  
   return (
     <Box>
-      <Typography variant={"h5"} sx={{ marginBottom: 4 }}>
+      <Typography variant={"h4"} sx={{ marginBottom: 4 }}>
         Search a product
       </Typography>
       <Grid container spacing={2}>

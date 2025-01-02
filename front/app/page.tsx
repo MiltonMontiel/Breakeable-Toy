@@ -1,8 +1,8 @@
 "use client";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { Button, Modal, Stack } from "@mui/material";
 import { SearchMenu } from "@/components/SearchMenu";
-import { Row, Statistics } from "@/components/Statistics";
+import { Statistics } from "@/components/Statistics";
 import React, { useEffect } from "react";
 import { getProducts, getCategories, getStatistics } from "@/utils/api";
 import { Statistic, Product } from "@/utils/types";
@@ -63,12 +63,24 @@ export default function Home() {
     price: "",
     expDate: "",
   });
+  const [focused, setFocused] = React.useState<GridRowSelectionModel>([]);
 
   const handleOpenModal = () => setModalOpen(true);
   const handleCloseModal = () => setModalOpen(false);
   const handleEditMenu = () => {
     setEditMenuOpen(!editMenuOpen);
   };
+  const handleFocusedChange = (newSelection: string[]) => {
+    const unfocused = focused.filter((id: any) => !newSelection.includes(id));
+    const newlyFocused = newSelection.filter((id: any)=> focused.includes(id));
+
+    console.log("Unfocused " + unfocused);
+    console.log("Newly " + newlyFocused);
+    unfocused.forEach((id) => console.log("Deselected " + id));
+    newlyFocused.forEach((id) => console.log("Newly selected " + id));
+
+    setFocused(newSelection)
+  }
 
   useEffect(() => {
     getProducts(setProducts, parseProducts, "",[],"");
@@ -76,7 +88,6 @@ export default function Home() {
     getCategories(setCategories);
   }, [modalOpen, editMenuOpen ]);
 
-  console.log(dayjs(currentProduct.expDate));
 
   return (
     <div style={{ width: "100%" }}>
@@ -130,13 +141,17 @@ export default function Home() {
             }}
             checkboxSelection
             disableRowSelectionOnClick
-            onRowSelectionModelChange={(e) => {
-              console.log(e);
-            }}
+            onRowSelectionModelChange={(e) => handleFocusedChange(e as string[])}
+            // onRowSelectionModelChange={(e, f) => {
+            //   setFocused(e);
+            // }}
+            onRowEditStart={(e) => console.log(e)}
             onRowDoubleClick={(e: any) => {
               setCurrentProduct(e.row);
               handleEditMenu();
             }}
+          
+            rowSelectionModel={focused}
           />
         )}
         <Statistics rows={statistics} />
