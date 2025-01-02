@@ -7,7 +7,7 @@ import {
 } from "@mui/material";
 import React from "react";
 import Grid from "@mui/material/Grid2";
-import { postProduct, updateProduct } from "@/utils/api";
+import { deleteProduct, postProduct, updateProduct } from "@/utils/api";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { Dayjs } from "dayjs";
@@ -33,7 +33,7 @@ type Props = {
   productUnitPrice: number;
   productExpDate: Dayjs | null;
   variant: "create" | "edit";
-  categories: string[]
+  categories: string[];
 };
 
 type ItemProps = {
@@ -59,7 +59,7 @@ export const ProductMenu: React.FC<Props> = ({
   productUnitPrice,
   productExpDate,
   variant,
-  categories, 
+  categories,
 }) => {
   const [name, setName] = React.useState<string>(productName);
   const [stock, setStock] = React.useState<number>(productSock);
@@ -102,6 +102,11 @@ export const ProductMenu: React.FC<Props> = ({
     // TODO: Close modal on sucess!!!!
     closeModal();
   };
+
+  const handleDeletion = () => {
+    deleteProduct(productId);
+    closeModal();
+  }
   console.log("Category: " + category);
   return (
     <Box sx={style}>
@@ -124,7 +129,7 @@ export const ProductMenu: React.FC<Props> = ({
         </Grid>
         <Grid size={8}>
           <Autocomplete
-          freeSolo
+            freeSolo
             id="category-autocomplete"
             onInputChange={(e, newInputValue) => setCategory(newInputValue)}
             value={category}
@@ -161,16 +166,20 @@ export const ProductMenu: React.FC<Props> = ({
             />
           </LocalizationProvider>
         </Grid>
+          <Button
+            disabled={!fieldsAreValid()}
+            variant="contained"
+            sx={{ marginTop: 4 }}
+            onClick={handleProduct}
+          >
+            {variant.toUpperCase()}
+          </Button>
+          {variant == "edit" && (
+            <Button sx={{ marginTop: 4, background: "red" }} variant="contained" onClick={handleDeletion}>
+            REMOVE
+            </Button>
+          )}
       </Grid>
-
-      <Button
-        disabled={!fieldsAreValid()}
-        variant="contained"
-        sx={{ marginTop: 4 }}
-        onClick={handleProduct}
-      >
-        {variant.toUpperCase()}
-      </Button>
     </Box>
   );
 };

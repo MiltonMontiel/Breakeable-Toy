@@ -1,5 +1,11 @@
 import { AxiosInstance } from "./axiosInstance";
 
+export const deleteProduct = (id: string) => {
+  AxiosInstance.delete(`/products/${id}`)
+    .then((res: any) => console.log(res))
+    .catch((err: any) => console.log(err));
+};
+
 export const postProduct = (
   name: string,
   category: string,
