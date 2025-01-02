@@ -1,7 +1,8 @@
 import { Box, Button, TextField, Typography } from "@mui/material";
-import React from "react";
+import React, { experimental_taintUniqueValue } from "react";
 import Grid from "@mui/material/Grid2";
 import { AxiosInstance } from "@/utils/axiosInstance";
+import { postProduct, updateProduct } from "@/utils/api";
 
 const style = {
   position: "absolute",
@@ -67,31 +68,11 @@ export const ProductMenu: React.FC<Props> = ({
   };
 
   const handleProduct = () => {
-    console.log("Doing...");
     switch (variant) {
       case "create":
-        // TODO: Refactor this!
-        AxiosInstance.post("/products", {
-          name: name,
-          category: category,
-          quantityInStock: stock,
-          unitPrice: unitPrice,
-          expirationDate: expDate,
-        })
-          .then((res: any) => console.log(res))
-          .catch((err: any) => console.log(err));
+        postProduct(name, category, stock, unitPrice, expDate);
       case "edit":
-        // TODO: Refactor this!
-        AxiosInstance.put(`/products/${productId}`, {
-          id: productId,
-          name: name,  
-          category: category,
-          quantityInStock: stock,
-          unitPrice: unitPrice,
-          expirationDate: expDate,
-        })
-          .then((res: any) => console.log(res))
-          .catch((err: any) => console.log(err));
+        updateProduct(productId, name, category, stock, unitPrice, expDate );
     }
     // TODO: Close modal on sucess!!!!
     closeModal();
