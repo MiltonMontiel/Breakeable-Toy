@@ -3,6 +3,9 @@ import React, { experimental_taintUniqueValue } from "react";
 import Grid from "@mui/material/Grid2";
 import { AxiosInstance } from "@/utils/axiosInstance";
 import { postProduct, updateProduct } from "@/utils/api";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs, { Dayjs } from "dayjs";
 
 const style = {
   position: "absolute",
@@ -23,7 +26,7 @@ type Props = {
   productCategory: string;
   productSock: number;
   productUnitPrice: number;
-  productExpDate: string;
+  productExpDate: Dayjs | null;
   variant: "create" | "edit";
 };
 
@@ -55,7 +58,7 @@ export const ProductMenu: React.FC<Props> = ({
   const [stock, setStock] = React.useState<number>(productSock);
   const [category, setCategory] = React.useState<string>(productCategory);
   const [unitPrice, setUnitPrice] = React.useState<number>(productUnitPrice);
-  const [expDate, setExpDate] = React.useState(productExpDate);
+  const [expDate, setExpDate] = React.useState<Dayjs | null>(productExpDate);
 
   const fieldsAreValid = () => {
     return (
@@ -63,21 +66,20 @@ export const ProductMenu: React.FC<Props> = ({
       name.length < 120 &&
       category.length > 0 &&
       stock >= 0 &&
-      unitPrice > 0 
+      unitPrice > 0
     );
   };
 
   const handleProduct = () => {
     switch (variant) {
       case "create":
-        postProduct(name, category, stock, unitPrice, expDate);
+        postProduct(name, category, stock, unitPrice, expDate?.toISOString() as string);
       case "edit":
-        updateProduct(productId, name, category, stock, unitPrice, expDate );
+        updateProduct(productId, name, category, stock, unitPrice, (typeof expDate != null ? expDate?.toISOString() : null) as string | null);
     }
     // TODO: Close modal on sucess!!!!
     closeModal();
   };
-  console.log(category);
   return (
     <Box sx={style}>
       <Typography variant="h4" sx={{ marginBottom: 4 }}>
@@ -121,15 +123,14 @@ export const ProductMenu: React.FC<Props> = ({
           onChange={setUnitPrice}
           value={unitPrice}
         />
-        <Item
-          required={false}
-          error={false}
-          helperText=""
-          id={"exp-date-text-field"}
-          label="Expiration Date"
-          onChange={setExpDate}
-          value={expDate}
-        />
+        <Grid size={4} alignContent={"center"}>
+          <Typography>Expiration Date</Typography>
+        </Grid>
+        <Grid size={8} >
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DatePicker value={expDate} onChange={(newValue) => setExpDate(newValue)}/>
+          </LocalizationProvider>
+        </Grid>
       </Grid>
 
       <Button

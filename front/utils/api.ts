@@ -24,7 +24,7 @@ export const updateProduct = (
   category: string,
   quantityInStock: number,
   unitPrice: number,
-  expirationDate: string
+  expirationDate: string | null
 ) => {
   AxiosInstance.put(`/products/${id}`, {
     id,

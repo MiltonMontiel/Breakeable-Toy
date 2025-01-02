@@ -51,10 +51,8 @@ export const SearchMenu: React.FC<SearchMenuProps> = ({ categories, getProducts 
 
   const filterProducts = () => {
     getProducts(filterName, categoriesFilter, availabilityFilter);
-    console.log(filterName, categoriesFilter, availabilityFilter)
   }
 
-  console.log(categoriesFilter);
  
   return (
     <Box>

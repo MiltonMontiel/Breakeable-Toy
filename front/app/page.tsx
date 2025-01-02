@@ -4,10 +4,10 @@ import { Button, Modal, Stack } from "@mui/material";
 import { SearchMenu } from "@/components/SearchMenu";
 import { Row, Statistics } from "@/components/Statistics";
 import React, { useEffect } from "react";
-import { CreateProductMenu } from "@/components/CreateProductMenu";
 import { getProducts, getCategories, getStatistics } from "@/utils/api";
 import { Statistic, Product } from "@/utils/types";
 import { ProductMenu } from "@/components/ProductMenu";
+import dayjs from "dayjs";
 
 const columns: GridColDef[] = [
   { field: "category", headerName: "Category", width: 150 },
@@ -43,20 +43,11 @@ const parseStats: any = (stats: Statistic[]) => {
       totalValueInStock: value.totalValueInStock,
       averagePriceInStock: value.averagePriceInStock,
     });
-    console.log(`Key: ${key}, Value: ${value}`);
   });
 
   return parsed;
 };
 
-const statsRows: Row[] = [
-  {
-    category: "Test",
-    totalInStock: 12,
-    totalValueInStock: 123,
-    averagePriceInStock: 123,
-  },
-];
 
 export default function Home() {
   const [products, setProducts] = React.useState([]);
@@ -85,7 +76,7 @@ export default function Home() {
     getCategories(setCategories);
   }, [modalOpen, editMenuOpen ]);
 
-  console.log(products)
+  console.log(dayjs(currentProduct.expDate));
 
   return (
     <div style={{ width: "100%" }}>
@@ -107,7 +98,7 @@ export default function Home() {
             productCategory={""}
             productSock={0}
             productUnitPrice={0}
-            productExpDate={""}
+            productExpDate={null}
             variant="create"
           />
         </Modal>
@@ -120,7 +111,7 @@ export default function Home() {
             productCategory={currentProduct.category}
             productSock={currentProduct.inStock}
             productUnitPrice={currentProduct.price}
-            productExpDate={""}
+            productExpDate={dayjs(currentProduct.expDate)}
             variant="edit"
           />
         </Modal>
