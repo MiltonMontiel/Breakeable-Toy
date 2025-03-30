@@ -51,7 +51,7 @@ public class Product {
     }
 
     public void setUnitPrice(Float unitPrice) {
-        this.unitPrice = unitPrice;
+        this.unitPrice = unitPrice != null ? unitPrice : 0.0f;
     }
 
     public void setExpirationDate(Optional<LocalDateTime> expirationDate) {
@@ -103,8 +103,10 @@ public class Product {
     }
 
     public Boolean fieldsAreValid() {
-        return (Stream.of(this.category, this.name, this.quantityInStock, this.unitPrice)
-                .allMatch(Objects::nonNull)) && this.name.length() <= 120;
+        return name != null && !name.isEmpty() && name.length() <= 120 &&
+               category != null && !category.isEmpty() &&
+               quantityInStock != null && quantityInStock >= 0 &&
+               unitPrice >= 0;
     }
 
 }

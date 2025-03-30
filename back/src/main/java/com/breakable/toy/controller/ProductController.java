@@ -4,96 +4,99 @@ import com.breakable.toy.model.*;
 import com.breakable.toy.model.Result;
 import com.breakable.toy.model.Result.Status;
 import com.breakable.toy.service.ProductService;
+import com.breakable.toy.service.StatisticsService;
+import com.breakable.toy.exception.ResourceNotFoundException;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/products")
 public class ProductController {
 
-    @Autowired
-    private ProductService productService;
+    private final ProductService productService;
+    private final StatisticsService statisticsService;
 
-    @GetMapping
-    ResponseEntity<Iterable<Product>> getProducts(@RequestParam String name,
-            @RequestParam ArrayList<String> categories, @RequestParam String availability) {
-        Iterable<Product> products = productService.getFilteredElements(name, categories, availability);
-        return new ResponseEntity<>(products, HttpStatus.OK);
+    @Autowired
+    public ProductController(ProductService productService, StatisticsService statisticsService) {
+        this.productService = productService;
+        this.statisticsService = statisticsService;
     }
 
-    // Gets the list of all available categories.
+    @GetMapping
+    public ResponseEntity<List<Product>> getProducts(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) List<String> categories,
+            @RequestParam(required = false) String availability) {
+        return ResponseEntity.ok(productService.getFilteredProducts(name, categories, availability));
+    }
+
     @GetMapping("/categories")
-    ResponseEntity<Iterable<String>> getCategoriesList() {
-        return new ResponseEntity<>(productService.getCategories(), HttpStatus.OK);
+    public ResponseEntity<List<String>> getCategories() {
+        return ResponseEntity.ok(productService.getCategories().stream().toList());
     }
 
     @GetMapping("/statistics")
-    public ResponseEntity<HashMap<String, Statistics>> getStatistics() {
-        return new ResponseEntity<>(productService.getStatistics(), HttpStatus.OK);
+    public ResponseEntity<Map<String, Statistics>> getStatistics() {
+        return ResponseEntity.ok(statisticsService.getStatistics());
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteProduct(@PathVariable String id) {
+    public ResponseEntity<Void> deleteProduct(@PathVariable String id) {
         productService.deleteProduct(id);
-        return new ResponseEntity<>("Sucessfully deleted" + id, HttpStatus.OK);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping
-    ResponseEntity<Result<Product>> postProduct(@RequestBody Product product) {
-        // Check if product fields are valid
-        if (product.fieldsAreValid()) {
-            Product created_product = productService.createProduct(product);
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(new Result<Product>(Status.Ok, "Sucessfully created product", created_product));
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new Result<Product>(Status.Err, "Product fields are invalid", product));
+    public ResponseEntity<Result<Product>> createProduct(@RequestBody Product product) {
+        if (!product.fieldsAreValid()) {
+            return ResponseEntity.badRequest()
+                    .body(new Result<>(Status.Err, "Product fields are invalid", product));
         }
+        
+        Product createdProduct = productService.createProduct(product);
+        return ResponseEntity.ok(new Result<>(Status.Ok, "Successfully created product", createdProduct));
     }
 
     @PutMapping("/{id}")
-    ResponseEntity<Result<Product>> putProduct(@PathVariable String id, @RequestBody Product product) {
-        // Check if product already exsits
-        if (productService.containsProduct(id)) {
+    public ResponseEntity<Result<Product>> updateProduct(
+            @PathVariable String id,
+            @RequestBody Product product) {
+        if (!product.fieldsAreValid()) {
+            return ResponseEntity.badRequest()
+                    .body(new Result<>(Status.Err, "Product fields are invalid", product));
+        }
 
-            Product updatedProduct = productService.updateProduct(product);
-
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(new Result<Product>(Status.Ok, "Successfully updated product", updatedProduct));
-        } else {
-            // If it doesnt exists we create it.
-            return this.postProduct(product);
+        try {
+            Product updatedProduct = productService.updateProduct(id, product);
+            return ResponseEntity.ok(new Result<>(Status.Ok, "Successfully updated product", updatedProduct));
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new Result<>(Status.Err, "Product not found", product));
         }
     }
 
-    @PutMapping("/{id}/outofstock")
-    ResponseEntity<Result<Product>> putOutOfStock(@PathVariable String id, @RequestBody Product product) {
+    @PutMapping("/{id}/out-of-stock")
+    public ResponseEntity<Result<Product>> setOutOfStock(@PathVariable String id) {
+        Product product = productService.getProductById(id);
         product.setQuantityInStock(0);
-        return this.putProduct(id, product);
+        Product updatedProduct = productService.updateProduct(id, product);
+        return ResponseEntity.ok(new Result<Product>(Status.Ok, "Product set to out of stock", updatedProduct));
     }
 
     @PutMapping("/{id}/instock")
-    ResponseEntity<Result<Product>> putInStock(@PathVariable String id, @RequestBody Product product) {
-        if (product.getQuantityInStock() > 0) {
-            return this.putProduct(id, product);
-        } else {
-            Result<Product> result = new Result<Product>(Status.Err,
-                    "Please ensure quantityInStock is grater than zero", product);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
+    public ResponseEntity<Result<Product>> setInStock(
+            @PathVariable String id,
+            @RequestBody Product product) {
+        if (product.getQuantityInStock() <= 0) {
+            return ResponseEntity.badRequest()
+                    .body(new Result<>(Status.Err, "Quantity must be greater than zero", product));
         }
+        return updateProduct(id, product);
     }
 }
