@@ -3,16 +3,13 @@ package com.breakable.toy.service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
 import com.breakable.toy.exception.ResourceNotFoundException;
 import com.breakable.toy.model.Product;
-import com.breakable.toy.model.Statistics;
 
 @Service
 public class ProductService {
@@ -58,6 +55,9 @@ public class ProductService {
 				.findFirst()
 				.orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
+		Product oldProductState = copyProduct(existingProduct);
+		String oldCategory = oldProductState.getCategory();
+		
 		existingProduct.setName(product.getName());
 		existingProduct.setCategory(product.getCategory());
 		existingProduct.setUnitPrice((float) product.getUnitPrice());
@@ -65,8 +65,26 @@ public class ProductService {
 		existingProduct.setExpirationDate(product.getExpirationDate());
 		existingProduct.setUpdateDate(LocalDateTime.now());
 
-		statisticsService.updateStats(existingProduct);
+		if (!oldCategory.equals(existingProduct.getCategory())) {
+			statisticsService.updateProductCategory(oldCategory, existingProduct);
+		} else {
+			statisticsService.updateProductStats(oldProductState, existingProduct);
+		}
+		
 		return existingProduct;
+	}
+	
+	private Product copyProduct(Product source) {
+		Product copy = new Product();
+		copy.setId();
+		copy.setName(source.getName());
+		copy.setCategory(source.getCategory());
+		copy.setUnitPrice((float) source.getUnitPrice());
+		copy.setQuantityInStock(source.getQuantityInStock());
+		copy.setExpirationDate(source.getExpirationDate());
+		copy.setCreationDate(source.getCreationDate());
+		copy.setUpdateDate(source.getUpdateDate());
+		return copy;
 	}
 
 	public void deleteProduct(String id) {
@@ -82,7 +100,7 @@ public class ProductService {
 	public List<Product> getFilteredProducts(String name, List<String> categories, String availability) {
 		return products.stream()
 				.filter(product -> name == null || product.getName().toLowerCase().contains(name.toLowerCase()))
-				.filter(product -> categories.isEmpty() || categories.contains(product.getCategory()))
+				.filter(product -> categories == null || categories.isEmpty() || categories.contains(product.getCategory()))
 				.filter(product -> {
 					if (availability == null) return true;
 					return switch (availability.toLowerCase()) {
