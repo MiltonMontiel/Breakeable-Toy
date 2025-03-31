@@ -157,13 +157,3 @@ npm run build
 ```
 
 The built files will be available in the `front/.next/` directory.
-
-## License
-
-[MIT License](LICENSE)
-
-## Acknowledgments
-
-- Spring Boot for the backend framework
-- Next.js and React for the frontend framework
-- Material UI for the component library 
