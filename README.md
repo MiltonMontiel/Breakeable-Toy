@@ -1,10 +1,6 @@
-# Inventory Management System
+# Breakable Toy
 
 A full-stack inventory management application built with Spring Boot (backend) and Next.js (frontend).
-
-## Project Overview
-
-This application helps businesses manage their inventory by tracking products, monitoring stock levels, and providing statistics on inventory value and composition. It features a responsive UI with real-time updates and visual indicators for stock levels.
 
 ## Features
 
