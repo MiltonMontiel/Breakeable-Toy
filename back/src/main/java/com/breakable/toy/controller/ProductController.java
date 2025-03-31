@@ -83,20 +83,33 @@ public class ProductController {
 
     @PutMapping("/{id}/out-of-stock")
     public ResponseEntity<Result<Product>> setOutOfStock(@PathVariable String id) {
-        Product product = productService.getProductById(id);
-        product.setQuantityInStock(0);
-        Product updatedProduct = productService.updateProduct(id, product);
-        return ResponseEntity.ok(new Result<Product>(Status.Ok, "Product set to out of stock", updatedProduct));
+        try {
+            Product result = productService.setProductOutOfStock(id);
+            return ResponseEntity.ok(new Result<>(Status.Ok, "Product set to out of stock", result));
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new Result<>(Status.Err, "Product not found", null));
+        }
     }
 
     @PutMapping("/{id}/instock")
     public ResponseEntity<Result<Product>> setInStock(
             @PathVariable String id,
             @RequestBody Product product) {
-        if (product.getQuantityInStock() <= 0) {
+        try {
+            if (product.getQuantityInStock() <= 0) {
+                return ResponseEntity.badRequest()
+                        .body(new Result<>(Status.Err, "Quantity must be greater than zero", product));
+            }
+            
+            Product result = productService.setProductStockLevel(id, product.getQuantityInStock());
+            return ResponseEntity.ok(new Result<>(Status.Ok, "Product stock updated", result));
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new Result<>(Status.Err, "Product not found", product));
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                    .body(new Result<>(Status.Err, "Quantity must be greater than zero", product));
+                    .body(new Result<>(Status.Err, e.getMessage(), product));
         }
-        return updateProduct(id, product);
     }
 }

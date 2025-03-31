@@ -74,6 +74,62 @@ public class ProductService {
 		return existingProduct;
 	}
 	
+	/**
+	 * Sets a product as out of stock (quantity = 0) and updates statistics accordingly
+	 * 
+	 * @param id The ID of the product to set out of stock
+	 * @return The updated product
+	 * @throws ResourceNotFoundException If the product is not found
+	 */
+	public Product setProductOutOfStock(String id) {
+		Product product = getProductById(id);
+		
+		// Only update if product is not already out of stock
+		if (product.getQuantityInStock() > 0) {
+			Product oldState = copyProduct(product);
+			
+			// Update the quantity to 0
+			product.setQuantityInStock(0);
+			product.setUpdateDate(LocalDateTime.now());
+			
+			// Update statistics
+			statisticsService.updateProductStats(oldState, product);
+		}
+		
+		return product;
+	}
+	
+	/**
+	 * Updates a product's stock level and updates statistics accordingly
+	 * 
+	 * @param id The ID of the product to update
+	 * @param newQuantity The new stock quantity (must be > 0)
+	 * @return The updated product
+	 * @throws ResourceNotFoundException If the product is not found
+	 * @throws IllegalArgumentException If the quantity is invalid
+	 */
+	public Product setProductStockLevel(String id, int newQuantity) {
+		if (newQuantity <= 0) {
+			throw new IllegalArgumentException("Stock quantity must be greater than zero");
+		}
+		
+		Product product = getProductById(id);
+		
+		// Only update if the quantity has actually changed
+		if (product.getQuantityInStock() != newQuantity) {
+			Product oldState = copyProduct(product);
+			
+			// Update the quantity
+			product.setQuantityInStock(newQuantity);
+			product.setUpdateDate(LocalDateTime.now());
+			
+			// Update statistics
+			statisticsService.updateProductStats(oldState, product);
+		}
+		
+		return product;
+	}
+	
 	private Product copyProduct(Product source) {
 		Product copy = new Product();
 		copy.setId();

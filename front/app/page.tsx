@@ -139,15 +139,6 @@ export default function Home() {
       </Snackbar>
       
       <Stack spacing={2}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h4">Product Management</Typography>
-          <Button 
-            variant="outlined" 
-            onClick={() => setShowApiTest(!showApiTest)}
-          >
-            {showApiTest ? 'Hide API Test' : 'Show API Test'}
-          </Button>
-        </Box>
 
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
