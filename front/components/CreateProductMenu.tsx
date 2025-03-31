@@ -1,7 +1,7 @@
 import { Box, Button, TextField, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import React from "react";
-import { AxiosInstance } from "@/utils/axiosInstance";
+import { postProduct, Product } from "@/utils/api";
 
 const style = {
   position: "absolute",
@@ -28,23 +28,24 @@ export const CreateProductMenu: React.FC<Props> = ({ closeModal }) => {
   const [category, setCategory] = React.useState<string>("");
   const [unitPrice, setUnitPrice] = React.useState<number>(0);
   const [expDate, setExpDate] = React.useState("");
+  const [error, setError] = React.useState<string | null>(null);
 
-  const handleProduct = () => {
-    console.log("Doing...");
-    AxiosInstance.post("/products", {
-      name: name,
-      category: category,
-      quantityInStock: stock,
-      unitPrice: unitPrice,
-      expirationDate: expDate,
-    })
-      .then((res) => console.log(res))
-      .catch((err) => console.log(err));
-    // Close modal on sucess!!!!
-    closeModal();
+  const handleProduct = async () => {
+    try {
+      const productData: Omit<Product, 'id'> = {
+        name,
+        category,
+        quantityInStock: stock,
+        unitPrice,
+        expirationDate: expDate || null
+      };
+      
+      await postProduct(productData);
+      closeModal();
+    } catch (err: any) {
+      setError(err.message || "An error occurred");
+    }
   };
-
-  console.log(unitPrice === undefined);
 
   const fieldsAreValid = () => {
     return (
@@ -52,9 +53,7 @@ export const CreateProductMenu: React.FC<Props> = ({ closeModal }) => {
       name.length < 120 &&
       category.length > 0 &&
       stock > 0 &&
-      Object.keys(stock).length != 0 &&
-      unitPrice > 0 &&
-      Object.keys(unitPrice).length != 0
+      unitPrice > 0
     );
   };
 
@@ -84,7 +83,7 @@ export const CreateProductMenu: React.FC<Props> = ({ closeModal }) => {
         />
         <Item
           required
-          error={Object.keys(stock).length === 0 || stock < 0}
+          error={stock <= 0}
           helperText=""
           id={"stock-text-field"}
           label={"Stock"}
@@ -93,7 +92,7 @@ export const CreateProductMenu: React.FC<Props> = ({ closeModal }) => {
         />
         <Item
           required
-          error={Object.keys(unitPrice).length === 0 || unitPrice < 0}
+          error={unitPrice <= 0}
           helperText=""
           id={"unit-price-text-field"}
           label={"Unit Price"}
@@ -109,6 +108,11 @@ export const CreateProductMenu: React.FC<Props> = ({ closeModal }) => {
           onChange={setExpDate}
           value={expDate}
         />
+        {error && (
+          <Grid size={12}>
+            <Typography color="error">{error}</Typography>
+          </Grid>
+        )}
       </Grid>
       <Button
         disabled={!fieldsAreValid()}

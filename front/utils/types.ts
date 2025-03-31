@@ -1,15 +1,13 @@
-export type Product = {
-  category: string;
-  expirationDate?: string;
-  id: string;
-  name: string;
-  quantityInStock: number;
-  unitPrice: number;
-};
+import { Product, Result } from "./api";
 
-export type Statistic = {
-    category: string, 
+export type { Product, Result };
+
+export type Statistics = {
     totalProductsInStock: number, 
     totalValueInStock: number, 
     averagePriceInStock: number, 
+}
+
+export type StatisticsMap = {
+    [category: string]: Statistics
 }

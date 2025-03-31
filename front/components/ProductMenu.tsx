@@ -4,10 +4,11 @@ import {
   Button,
   TextField,
   Typography,
+  CircularProgress,
 } from "@mui/material";
 import React from "react";
 import Grid from "@mui/material/Grid2";
-import { deleteProduct, postProduct, updateProduct } from "@/utils/api";
+import { deleteProduct, postProduct, updateProduct, setOutOfStock, Product } from "@/utils/api";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { Dayjs } from "dayjs";
@@ -66,6 +67,8 @@ export const ProductMenu: React.FC<Props> = ({
   const [category, setCategory] = React.useState<string>(productCategory);
   const [unitPrice, setUnitPrice] = React.useState<number>(productUnitPrice);
   const [expDate, setExpDate] = React.useState<Dayjs | null>(productExpDate);
+  const [error, setError] = React.useState<string | null>(null);
+  const [loading, setLoading] = React.useState<boolean>(false);
 
   const fieldsAreValid = () => {
     return (
@@ -77,36 +80,60 @@ export const ProductMenu: React.FC<Props> = ({
     );
   };
 
-  const handleProduct = () => {
-    switch (variant) {
-      case "create":
-        postProduct(
-          name,
-          category,
-          stock,
-          unitPrice,
-          expDate?.toISOString() as string
-        );
-      case "edit":
-        updateProduct(
-          productId,
-          name,
-          category,
-          stock,
-          unitPrice,
-          (typeof expDate != null && expDate?.isValid()
-            ? expDate?.toISOString()
-            : null) as string | null
-        );
+  const handleProduct = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const productData: Omit<Product, 'id'> = {
+        name,
+        category,
+        quantityInStock: stock,
+        unitPrice,
+        expirationDate: expDate?.isValid() ? expDate.toISOString() : null
+      };
+
+      console.log(`${variant === "create" ? "Creating" : "Updating"} product with data:`, productData);
+
+      if (variant === "create") {
+        await postProduct(productData);
+      } else {
+        await updateProduct(productId, productData);
+      }
+      closeModal();
+    } catch (err: any) {
+      console.error(`Error ${variant === "create" ? "creating" : "updating"} product:`, err);
+      setError(err.response?.data?.message || err.message || "An error occurred");
+    } finally {
+      setLoading(false);
     }
-    // TODO: Close modal on sucess!!!!
-    closeModal();
   };
 
-  const handleDeletion = () => {
-    deleteProduct(productId);
-    closeModal();
-  }
+  const handleDeletion = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      await deleteProduct(productId);
+      closeModal();
+    } catch (err: any) {
+      setError(err.response?.data?.message || err.message || "An error occurred while deleting");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSetOutOfStock = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      await setOutOfStock(productId);
+      closeModal();
+    } catch (err: any) {
+      setError(err.response?.data?.message || err.message || "An error occurred while setting out of stock");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Box sx={style}>
@@ -166,19 +193,48 @@ export const ProductMenu: React.FC<Props> = ({
             />
           </LocalizationProvider>
         </Grid>
-          <Button
-            disabled={!fieldsAreValid()}
-            variant="contained"
-            sx={{ marginTop: 4 }}
-            onClick={handleProduct}
-          >
-            {variant.toUpperCase()}
-          </Button>
-          {variant == "edit" && (
-            <Button sx={{ marginTop: 4, background: "red" }} variant="contained" onClick={handleDeletion}>
-            REMOVE
+        {error && (
+          <Grid size={12}>
+            <Typography color="error">{error}</Typography>
+          </Grid>
+        )}
+        <Grid size={12} container spacing={2} justifyContent="flex-start">
+          <Grid>
+            <Button
+              disabled={!fieldsAreValid() || loading}
+              variant="contained"
+              sx={{ marginTop: 4 }}
+              onClick={handleProduct}
+              startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
+            >
+              {loading ? "PROCESSING..." : variant.toUpperCase()}
             </Button>
+          </Grid>
+          {variant === "edit" && (
+            <>
+              <Grid>
+                <Button 
+                  sx={{ marginTop: 4, background: "orange" }}
+                  disabled={loading}
+                  variant="contained" 
+                  onClick={handleSetOutOfStock}
+                >
+                  SET OUT OF STOCK
+                </Button>
+              </Grid>
+              <Grid>
+                <Button 
+                  sx={{ marginTop: 4, background: "red" }}
+                  disabled={loading}
+                  variant="contained" 
+                  onClick={handleDeletion}
+                >
+                  REMOVE
+                </Button>
+              </Grid>
+            </>
           )}
+        </Grid>
       </Grid>
     </Box>
   );

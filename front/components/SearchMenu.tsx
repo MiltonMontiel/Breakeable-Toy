@@ -41,7 +41,7 @@ export const TextInput: React.FC<TextFieldProps> = ({ label }) => {
 
 type SearchMenuProps = {
   categories: string[];
-  getProducts: any;
+  getProducts: (name: string, categories: string[], availability: string) => void;
 };
 
 export const SearchMenu: React.FC<SearchMenuProps> = ({ categories, getProducts }) => {
@@ -122,10 +122,10 @@ export const SearchMenu: React.FC<SearchMenuProps> = ({ categories, getProducts 
         </Grid>
         <Grid size={2}>
           <Button variant="contained" sx={{ width: "100%" }} onClick={() => {
-            setAvailabilityFilter("")
-            setCategoriesFilter([])
-            setFilterName("")
-            filterProducts()
+            setAvailabilityFilter("");
+            setCategoriesFilter([]);
+            setFilterName("");
+            getProducts("", [], "");
           }}>
           Remove filters
           </Button>

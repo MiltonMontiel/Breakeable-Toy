@@ -1,19 +1,18 @@
 "use client";
 import {
-  DataGrid,
   GridCellParams,
   gridClasses,
   GridColDef,
   GridRowSelectionModel,
 } from "@mui/x-data-grid";
-import { Box, Button, Modal, Stack } from "@mui/material";
+import { Box, Button, Modal, Stack, Alert, Snackbar, Typography, CircularProgress } from "@mui/material";
 import { SearchMenu } from "@/components/SearchMenu";
 import { Statistics } from "@/components/Statistics";
 import React, { useEffect } from "react";
-import { getProducts, getCategories, getStatistics } from "@/utils/api";
-import { Statistic, Product } from "@/utils/types";
+import { getProducts, getCategories, getStatistics, Product } from "@/utils/api";
+import { StatisticsMap } from "@/utils/types";
 import { ProductMenu } from "@/components/ProductMenu";
-import dayjs, { Dayjs } from "dayjs";
+import dayjs from "dayjs";
 import { convertExpDate, StyledDataGrid } from "@/components/StyledDataGrid";
 
 const columns: GridColDef[] = [
@@ -25,52 +24,57 @@ const columns: GridColDef[] = [
   { field: "action", headerName: "Actions" },
 ];
 
-const parseProducts: any = (products: Product[]) => {
-  let parsed: any = [];
-
-  products.map((product) => {
-    parsed.push({
-      id: product.id,
-      category: product.category,
-      name: product.name,
-      price: product.unitPrice,
-      expDate: product.expirationDate ? dayjs(product.expirationDate) : null,
-      inStock: product.quantityInStock,
-    });
-  });
-
-  return parsed;
+const parseProducts = (products: Product[]) => {
+  if (!Array.isArray(products)) {
+    console.error("Products data is not an array:", products);
+    return [];
+  }
+  
+  return products.map((product) => ({
+    id: product.id,
+    category: product.category,
+    name: product.name,
+    price: product.unitPrice,
+    expDate: product.expirationDate ? dayjs(product.expirationDate) : null,
+    inStock: product.quantityInStock,
+  }));
 };
 
-const parseStats: any = (stats: Statistic[]) => {
-  let parsed: any = [];
-  Object.entries(stats).forEach(([key, value]) => {
-    parsed.push({
-      category: key,
-      totalInStock: value.totalProductsInStock,
-      totalValueInStock: value.totalValueInStock,
-      averagePriceInStock: value.averagePriceInStock,
-    });
-  });
-
-  return parsed;
+const parseStats = (stats: StatisticsMap) => {
+  if (!stats || typeof stats !== 'object') {
+    console.error("Statistics data is not an object:", stats);
+    return [];
+  }
+  
+  return Object.entries(stats).map(([key, value]) => ({
+    category: key,
+    totalInStock: value.totalProductsInStock,
+    totalValueInStock: value.totalValueInStock,
+    averagePriceInStock: value.averagePriceInStock,
+  }));
 };
 
 export default function Home() {
-  const [products, setProducts] = React.useState([]);
+  const [products, setProducts] = React.useState<any[]>([]);
   const [categories, setCategories] = React.useState<string[]>([]);
-  const [statistics, setStatistics] = React.useState([]);
+  const [statistics, setStatistics] = React.useState<any[]>([]);
   const [modalOpen, setModalOpen] = React.useState<boolean>(false);
   const [editMenuOpen, setEditMenuOpen] = React.useState<boolean>(false);
   const [currentProduct, setCurrentProduct] = React.useState<any>({
     id: "",
     name: "",
     category: "",
-    inStock: "",
-    price: "",
+    inStock: 0,
+    price: 0,
     expDate: "",
   });
   const [focused, setFocused] = React.useState<GridRowSelectionModel>([]);
+  const [filterName, setFilterName] = React.useState<string>("");
+  const [filterCategories, setFilterCategories] = React.useState<string[]>([]);
+  const [filterAvailability, setFilterAvailability] = React.useState<string>("");
+  const [error, setError] = React.useState<string | null>(null);
+  const [loading, setLoading] = React.useState<boolean>(true);
+  const [showApiTest, setShowApiTest] = React.useState<boolean>(false);
 
   const handleOpenModal = () => setModalOpen(true);
   const handleCloseModal = () => setModalOpen(false);
@@ -78,41 +82,89 @@ export default function Home() {
     setEditMenuOpen(!editMenuOpen);
   };
   const handleFocusedChange = (newSelection: string[]) => {
-    const unfocused = focused.filter((id: any) => !newSelection.includes(id));
-    const newlyFocused = newSelection.filter((id: any) => focused.includes(id));
-
-    console.log("Unfocused " + unfocused);
-    console.log("Newly " + newlyFocused);
-    unfocused.forEach((id) => console.log("Deselected " + id));
-    newlyFocused.forEach((id) => console.log("Newly selected " + id));
-
     setFocused(newSelection);
+  };
+  
+  const handleCloseError = () => {
+    setError(null);
+  };
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Get categories first so they're available for the other components
+      const categoriesData = await getCategories();
+      setCategories(Array.isArray(categoriesData) ? categoriesData : []);
+      
+      // Get products with any active filters
+      const filters = {
+        name: filterName,
+        categories: filterCategories,
+        availability: filterAvailability
+      };
+      const productsData = await getProducts(filters);
+      setProducts(parseProducts(productsData));
+      
+      // Get statistics data
+      const statsData = await getStatistics();
+      setStatistics(parseStats(statsData));
+    } catch (error: any) {
+      console.error("Error fetching data:", error);
+      setError(error.message || "Failed to load data. Please try again.");
+      setShowApiTest(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    getProducts(setProducts, parseProducts, "", [], "");
-    getStatistics(setStatistics, parseStats);
-    getCategories(setCategories);
+    fetchData();
   }, [modalOpen, editMenuOpen]);
+
+  const handleSearch = (name: string, categories: string[], availability: string) => {
+    setFilterName(name);
+    setFilterCategories(categories);
+    setFilterAvailability(availability);
+    fetchData();
+  };
 
   return (
     <div style={{ width: "100%" }}>
+      <Snackbar open={!!error} autoHideDuration={6000} onClose={handleCloseError}>
+        <Alert onClose={handleCloseError} severity="error" sx={{ width: '100%' }}>
+          {error}
+        </Alert>
+      </Snackbar>
+      
       <Stack spacing={2}>
-        <SearchMenu
-          categories={categories}
-          getProducts={(name: any, categories: any, availability: any) =>
-            getProducts(
-              setProducts,
-              parseProducts,
-              name,
-              categories,
-              availability
-            )
-          }
-        />
-        <Button variant="contained" onClick={handleOpenModal}>
-          New product
-        </Button>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h4">Product Management</Typography>
+          <Button 
+            variant="outlined" 
+            onClick={() => setShowApiTest(!showApiTest)}
+          >
+            {showApiTest ? 'Hide API Test' : 'Show API Test'}
+          </Button>
+        </Box>
+
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+            <CircularProgress />
+          </Box>
+        ) : (
+          <>
+            <SearchMenu
+              categories={categories}
+              getProducts={handleSearch}
+            />
+            <Button variant="contained" onClick={handleOpenModal}>
+              New product
+            </Button>
+          </>
+        )}
+
         <Modal
           open={modalOpen}
           onClose={handleCloseModal}
@@ -140,12 +192,13 @@ export default function Home() {
             productCategory={currentProduct.category}
             productSock={currentProduct.inStock}
             productUnitPrice={currentProduct.price}
-            productExpDate={dayjs(currentProduct.expDate)}
+            productExpDate={currentProduct.expDate}
             variant="edit"
             categories={categories}
           />
         </Modal>
-        {products && (
+        
+        {loading ? null : products.length > 0 ? (
           <Box
             sx={{
               [`.${gridClasses.cell}.OK`]: {
@@ -174,9 +227,6 @@ export default function Home() {
               onRowSelectionModelChange={(e) =>
                 handleFocusedChange(e as string[])
               }
-              // onRowSelectionModelChange={(e, f) => {
-              //   setFocused(e);
-              // }}
               onRowDoubleClick={(e: any) => {
                 setCurrentProduct(e.row);
                 handleEditMenu();
@@ -200,8 +250,11 @@ export default function Home() {
               rowSelectionModel={focused}
             />
           </Box>
+        ) : (
+          <Alert severity="info">No products found. Try adjusting your filters or create a new product.</Alert>
         )}
-        <Statistics rows={statistics} />
+        
+        {!loading && statistics.length > 0 && <Statistics rows={statistics} />}
       </Stack>
     </div>
   );
